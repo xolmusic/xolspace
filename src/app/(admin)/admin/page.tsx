@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import Cover from "@/components/Cover";
 import {
   projectTypeLabel,
   statusLabel,
@@ -74,7 +75,7 @@ export default async function DashboardPage() {
                 className="card"
                 style={{ display: "flex", alignItems: "center", gap: 14, padding: 14 }}
               >
-                <Cover coverKey={p.coverKey} />
+                <Cover src={p.coverKey ? `/api/img/${p.coverKey}` : null} size={46} radius={8} />
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontWeight: 500 }}>{p.title}</div>
                   <div style={{ fontSize: 13, color: "var(--text-soft)" }}>
@@ -95,25 +96,4 @@ export default async function DashboardPage() {
       </div>
     </div>
   );
-}
-
-function Cover({ coverKey }: { coverKey: string | null }) {
-  const style: React.CSSProperties = {
-    width: 46,
-    height: 46,
-    borderRadius: 8,
-    flexShrink: 0,
-    objectFit: "cover",
-    background: "var(--surface-3)",
-  };
-  if (!coverKey)
-    return (
-      <div style={{ ...style, display: "grid", placeItems: "center" }}>
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-mute)" strokeWidth="1.6">
-          <path d="M12 3v10.55A4 4 0 1014 17V7h4V3z" />
-        </svg>
-      </div>
-    );
-  // eslint-disable-next-line @next/next/no-img-element
-  return <img src={`/api/img/${coverKey}`} alt="" style={style} />;
 }

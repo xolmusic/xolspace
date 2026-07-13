@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import Cover from "@/components/Cover";
 import {
   projectTypeLabel,
   statusLabel,
@@ -47,12 +48,7 @@ export default async function ProjectDetailPage({
       </Link>
 
       <div className="row" style={{ gap: 20, alignItems: "flex-start" }}>
-        <div style={{ width: 140, height: 140, borderRadius: 12, background: "var(--surface-3)", flexShrink: 0, overflow: "hidden" }}>
-          {project.coverKey && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={`/api/img/${project.coverKey}`} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-          )}
-        </div>
+        <Cover src={project.coverKey ? `/api/img/${project.coverKey}` : null} size={140} radius={12} />
         <div style={{ flex: 1 }}>
           <div className="row" style={{ gap: 8, marginBottom: 6 }}>
             <span className="badge">{projectTypeLabel[project.type]}</span>

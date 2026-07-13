@@ -5,6 +5,7 @@ import { projectTypeLabel, fmtDuration } from "@/lib/display";
 import PublicPlayer from "@/components/PublicPlayer";
 import PasswordGate from "./PasswordGate";
 import { signedGetUrl } from "@/lib/storage";
+import Cover from "@/components/Cover";
 
 export const dynamic = "force-dynamic";
 
@@ -94,12 +95,7 @@ export default async function SharePage({
     return (
       <Shell>
         <div className="row" style={{ gap: 20, alignItems: "flex-start", marginBottom: 28 }}>
-          <div style={{ width: 150, height: 150, borderRadius: 14, background: "var(--surface-3)", flexShrink: 0, overflow: "hidden" }}>
-            {cover && (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={cover} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-            )}
-          </div>
+          <Cover src={cover} size={150} radius={14} />
           <div>
             <span className="badge">{projectTypeLabel[p.type]}</span>
             <h1 style={{ fontSize: 30, marginTop: 8 }}>{p.title}</h1>
@@ -128,12 +124,7 @@ export default async function SharePage({
     return (
       <Shell>
         <div className="row" style={{ gap: 20, alignItems: "flex-start", marginBottom: 28 }}>
-          <div style={{ width: 120, height: 120, borderRadius: 14, background: "var(--surface-3)", flexShrink: 0, overflow: "hidden" }}>
-            {cover && (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={cover} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-            )}
-          </div>
+          <Cover src={cover} size={120} radius={14} />
           <div>
             <h1 style={{ fontSize: 26 }}>{t.title}</h1>
             <p className="muted">

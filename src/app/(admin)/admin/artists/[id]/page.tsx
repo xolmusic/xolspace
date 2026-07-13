@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import Cover from "@/components/Cover";
 import { projectTypeLabel, fmtDuration } from "@/lib/display";
 import SongUploader from "@/components/SongUploader";
 import AudioPlayer from "@/components/AudioPlayer";
@@ -117,12 +118,7 @@ export default async function ArtistDetailPage({
                 className="card"
                 style={{ display: "flex", alignItems: "center", gap: 14, padding: 12 }}
               >
-                {p.coverKey ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={`/api/img/${p.coverKey}`} alt="" style={{ width: 44, height: 44, borderRadius: 8, objectFit: "cover" }} />
-                ) : (
-                  <div style={{ width: 44, height: 44, borderRadius: 8, background: "var(--surface-3)" }} />
-                )}
+                <Cover src={p.coverKey ? `/api/img/${p.coverKey}` : null} size={44} radius={8} />
                 <div style={{ flex: 1 }}>
                   <div style={{ fontWeight: 500 }}>{p.title}</div>
                   <div style={{ fontSize: 13, color: "var(--text-soft)" }}>

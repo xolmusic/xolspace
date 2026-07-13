@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import Cover from "@/components/Cover";
 import { projectTypeLabel, statusLabel, statusBadgeClass, fmtDate } from "@/lib/display";
 
 export default async function ProjectsPage() {
@@ -31,16 +32,7 @@ export default async function ProjectsPage() {
         >
           {projects.map((p: (typeof projects)[number]) => (
             <Link key={p.id} href={`/admin/projects/${p.id}`} className="card" style={{ padding: 0, overflow: "hidden" }}>
-              <div style={{ aspectRatio: "1/1", background: "var(--surface-3)" }}>
-                {p.coverKey && (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={`/api/img/${p.coverKey}`}
-                    alt=""
-                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                  />
-                )}
-              </div>
+              <Cover src={p.coverKey ? `/api/img/${p.coverKey}` : null} size="100%" radius={0} />
               <div style={{ padding: 14 }}>
                 <div className="row" style={{ justifyContent: "space-between", marginBottom: 4 }}>
                   <span className="badge">{projectTypeLabel[p.type]}</span>
