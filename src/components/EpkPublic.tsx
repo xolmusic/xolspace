@@ -2,6 +2,13 @@ import PublicPlayer from "@/components/PublicPlayer";
 import { youtubeId } from "@/lib/youtube";
 import { signedGetUrl } from "@/lib/storage";
 import { fmtDuration } from "@/lib/display";
+import {
+  InstagramIcon,
+  TikTokIcon,
+  FacebookIcon,
+  SpotifyIcon,
+  AppleMusicIcon,
+} from "@/components/SocialIcons";
 
 type MusicItem = { id: string; title: string; subtitle?: string };
 
@@ -34,20 +41,32 @@ export default async function EpkPublic({
   );
 
   const socials = [
-    { label: "Instagram", url: epk.instagram },
-    { label: "TikTok", url: epk.tiktok },
-    { label: "Facebook", url: epk.facebook },
-    { label: "Spotify", url: epk.spotify },
-    { label: "Apple Music", url: epk.appleMusic },
+    { label: "Instagram", url: epk.instagram, Icon: InstagramIcon },
+    { label: "TikTok", url: epk.tiktok, Icon: TikTokIcon },
+    { label: "Facebook", url: epk.facebook, Icon: FacebookIcon },
+    { label: "Spotify", url: epk.spotify, Icon: SpotifyIcon },
+    { label: "Apple Music", url: epk.appleMusic, Icon: AppleMusicIcon },
   ].filter((s) => s.url);
 
   return (
     <div className="stack" style={{ gap: 32 }}>
       <div style={{ textAlign: "center" }}>
         <h1 style={{ fontSize: 34 }}>{epk.artist.stageName}</h1>
-        {epk.tagline && <p className="muted" style={{ fontSize: 16, marginTop: 4 }}>{epk.tagline}</p>}
-        {epk.artist.country && (
-          <p style={{ fontSize: 13, color: "var(--text-mute)", marginTop: 4 }}>{epk.artist.country}</p>
+        {epk.tagline && (
+          <p
+            style={{
+              fontSize: 20,
+              fontWeight: 500,
+              color: "var(--text-soft)",
+              marginTop: 8,
+              maxWidth: 560,
+              marginLeft: "auto",
+              marginRight: "auto",
+              lineHeight: 1.4,
+            }}
+          >
+            {epk.tagline}
+          </p>
         )}
       </div>
 
@@ -103,10 +122,18 @@ export default async function EpkPublic({
       {(socials.length > 0 || epk.bookingEmail) && (
         <section style={{ textAlign: "center", borderTop: "1px solid var(--border)", paddingTop: 24 }}>
           {socials.length > 0 && (
-            <div className="row" style={{ gap: 10, justifyContent: "center", flexWrap: "wrap", marginBottom: 14 }}>
-              {socials.map((s) => (
-                <a key={s.label} href={s.url!} target="_blank" rel="noopener noreferrer" className="btn btn-sm">
-                  {s.label}
+            <div className="row" style={{ gap: 14, justifyContent: "center", flexWrap: "wrap", marginBottom: 16 }}>
+              {socials.map(({ label, url, Icon }) => (
+                <a
+                  key={label}
+                  href={url!}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={label}
+                  title={label}
+                  style={{ display: "inline-flex", transition: "transform 0.12s" }}
+                >
+                  <Icon size={30} />
                 </a>
               ))}
             </div>
