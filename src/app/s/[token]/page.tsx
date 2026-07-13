@@ -122,7 +122,9 @@ export default async function SharePage({
 
   if (link.targetType === "TRACK" && link.track) {
     const t = link.track;
-    const cover = t.project.coverKey ? await signedGetUrl(t.project.coverKey, 3600) : null;
+    const cover = t.project?.coverKey
+      ? await signedGetUrl(t.project.coverKey, 3600)
+      : null;
     return (
       <Shell>
         <div className="row" style={{ gap: 20, alignItems: "flex-start", marginBottom: 28 }}>
@@ -134,7 +136,10 @@ export default async function SharePage({
           </div>
           <div>
             <h1 style={{ fontSize: 26 }}>{t.title}</h1>
-            <p className="muted">{t.artist.stageName} · {t.project.title}</p>
+            <p className="muted">
+              {t.artist.stageName}
+              {t.project ? ` · ${t.project.title}` : ""}
+            </p>
           </div>
         </div>
         <PublicPlayer
