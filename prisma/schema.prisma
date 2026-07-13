@@ -200,3 +200,68 @@ model EpkItem {
 
   @@index([epkId])
 }
+
+// --- CRM : base de contacts professionnels ---
+enum ContactType {
+  JOURNALIST
+  RADIO
+  BLOG
+  PLAYLIST_CURATOR
+  MANAGER
+  BOOKER
+  LABEL
+  STUDIO
+  INFLUENCER
+}
+
+model Contact {
+  id            String       @id @default(cuid())
+  name          String
+  type          ContactType
+  organization  String?
+  email         String?
+  phone         String?
+  country       String?
+  socials       String?               // liens libres (instagram, site...)
+  notes         String?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  interactions  Interaction[]
+
+  @@index([type])
+  @@index([name])
+}
+
+enum InteractionStatus {
+  TO_CONTACT     // A contacter
+  SENT           // Envoye
+  FOLLOWED_UP    // Relance
+  REPLIED        // Repondu
+  POSITIVE       // Positif
+  NEGATIVE       // Negatif
+  NO_REPLY       // Sans reponse
+}
+
+// Chaque prise de contact avec un contact : lien envoye, dates, statut.
+model Interaction {
+  id            String            @id @default(cuid())
+  status        InteractionStatus @default(TO_CONTACT)
+  subject       String?                     // ex: "Sortie EP Kallya"
+  // lien envoye : soit un lien de partage interne (token), soit une URL libre
+  shareToken    String?                     // token d'un ShareLink de l'outil
+  externalUrl   String?                     // ou une URL libre
+  sentAt        DateTime?                   // date d'envoi
+  repliedAt     DateTime?                   // date de reponse
+  followUpAt    DateTime?                   // date de relance prevue
+  notes         String?
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+
+  contact       Contact           @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  contactId     String
+
+  @@index([contactId])
+  @@index([status])
+  @@index([followUpAt])
+}
