@@ -1,7 +1,7 @@
 import Image from "next/image";
 import { prisma } from "@/lib/prisma";
-import { resolveShare } from "@/lib/share";
-import { projectTypeLabel, fmtDuration } from "@/lib/display";
+import { resolveShare, previewTitle } from "@/lib/share";
+import { projectTypeLabel, fmtDuration, appUrl } from "@/lib/display";
 import PublicPlayer from "@/components/PublicPlayer";
 import EpkPublic, { buildEpkMusic } from "@/components/EpkPublic";
 import PasswordGate from "./PasswordGate";
@@ -9,6 +9,41 @@ import { signedGetUrl } from "@/lib/storage";
 import Cover from "@/components/Cover";
 
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ token: string }>;
+}) {
+  const { token } = await params;
+  const base = appUrl();
+  let title = "XOL Music";
+  try {
+    title = await previewTitle(token);
+  } catch {
+    // ignore, on garde le titre par defaut
+  }
+  const imageUrl = `${base}/api/og/${token}`;
+  const description = "Écoute privée — XOL Music.";
+
+  return {
+    title: `${title} · XOL Music`,
+    description,
+    openGraph: {
+      title,
+      description,
+      images: [{ url: imageUrl, width: 1200, height: 1200 }],
+      type: "music.song" as const,
+      siteName: "XOL Music",
+    },
+    twitter: {
+      card: "summary_large_image" as const,
+      title,
+      description,
+      images: [imageUrl],
+    },
+  };
+}
 
 function Shell({ children }: { children: React.ReactNode }) {
   return (
