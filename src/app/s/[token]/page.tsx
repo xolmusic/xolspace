@@ -29,9 +29,36 @@ function Shell({ children }: { children: React.ReactNode }) {
           priority
         />
       </header>
-      <div style={{ maxWidth: 720, margin: "0 auto", padding: "36px 24px 80px" }}>
+      <div style={{ maxWidth: 720, margin: "0 auto", padding: "36px 24px 40px" }}>
         {children}
       </div>
+      <footer
+        style={{
+          maxWidth: 720,
+          margin: "0 auto",
+          padding: "24px 24px 56px",
+          borderTop: "1px solid var(--border)",
+        }}
+      >
+        <p
+          style={{
+            fontSize: 11.5,
+            lineHeight: 1.6,
+            color: "var(--text-mute)",
+            textAlign: "center",
+          }}
+        >
+          © 2026–2028 XOL Music. Tous droits réservés.
+          <br />
+          Les enregistrements accessibles via ce lien sont la propriété
+          intellectuelle exclusive de XOL Music et de ses ayants droit. Ils vous
+          sont communiqués à titre strictement confidentiel, pour écoute privée
+          uniquement. Toute reproduction, diffusion publique, distribution,
+          téléchargement ou exploitation commerciale, totale ou partielle, sans
+          autorisation écrite préalable de XOL Music, est strictement interdite
+          et expose son auteur à des poursuites.
+        </p>
+      </footer>
     </main>
   );
 }
