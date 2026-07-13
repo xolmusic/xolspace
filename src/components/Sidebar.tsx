@@ -11,6 +11,7 @@ const NAV = [
   { href: "/admin/artists", label: "Artistes", icon: "M16 21v-2a4 4 0 00-8 0v2M12 7a4 4 0 100 8 4 4 0 000-8z" },
   { href: "/admin/projects", label: "Projets", icon: "M12 3v10.55A4 4 0 1014 17V7h4V3z" },
   { href: "/admin/catalogue", label: "Catalogue", icon: "M4 6h16M4 12h16M4 18h10" },
+  { href: "/admin/epk", label: "Presskit EPK", icon: "M4 5h16v14H4zM4 9h16M9 5v14" },
   { href: "/admin/links", label: "Liens de partage", icon: "M10 13a5 5 0 007 0l2-2a5 5 0 00-7-7l-1 1M14 11a5 5 0 00-7 0l-2 2a5 5 0 007 7l1-1" },
 ];
 

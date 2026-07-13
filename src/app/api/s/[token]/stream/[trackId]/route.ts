@@ -31,6 +31,25 @@ export async function GET(
       (x: { id: string; audioKey: string }) => x.id === trackId
     );
     audioKey = t?.audioKey ?? null;
+  } else if (link.targetType === "EPK" && link.epk) {
+    // Un titre est autorise s'il est reference par l'EPK, soit directement,
+    // soit via un projet selectionne. On verifie l'appartenance en base.
+    const directTrackIds = link.epk.items
+      .map((it: { trackId: string | null }) => it.trackId)
+      .filter((x: string | null): x is string => !!x);
+    const projectIds = link.epk.items
+      .map((it: { projectId: string | null }) => it.projectId)
+      .filter((x: string | null): x is string => !!x);
+
+    if (directTrackIds.includes(trackId)) {
+      const t = await prisma.track.findUnique({ where: { id: trackId } });
+      audioKey = t?.audioKey ?? null;
+    } else if (projectIds.length) {
+      const t = await prisma.track.findFirst({
+        where: { id: trackId, projectId: { in: projectIds } },
+      });
+      audioKey = t?.audioKey ?? null;
+    }
   }
 
   if (!audioKey) return new NextResponse("Introuvable", { status: 404 });

@@ -31,6 +31,7 @@ model Artist {
   projects     Project[]
   tracks       Track[]
   shareLinks   ShareLink[]
+  epk          Epk?
 
   @@index([stageName])
 }
@@ -100,6 +101,7 @@ enum ShareTargetType {
   PROJECT
   TRACK
   ARTIST
+  EPK
 }
 
 model ShareLink {
@@ -121,6 +123,8 @@ model ShareLink {
   trackId        String?
   artist         Artist?         @relation(fields: [artistId], references: [id], onDelete: Cascade)
   artistId       String?
+  epk            Epk?            @relation(fields: [epkId], references: [id], onDelete: Cascade)
+  epkId          String?
 
   events         PlayEvent[]
 
@@ -137,4 +141,62 @@ model PlayEvent {
   createdAt    DateTime  @default(now())
 
   @@index([shareLinkId])
+}
+
+// --- Presskit / EPK d'un artiste (relation 1-1) ---
+model Epk {
+  id             String    @id @default(cuid())
+  bio            String?               // bio dediee EPK (longue)
+  tagline        String?               // accroche courte
+  // reseaux et contacts
+  facebook       String?
+  tiktok         String?
+  instagram      String?
+  spotify        String?
+  appleMusic     String?
+  bookingEmail   String?
+  published      Boolean   @default(false)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  artist         Artist    @relation(fields: [artistId], references: [id], onDelete: Cascade)
+  artistId       String    @unique
+
+  photos         EpkPhoto[]
+  videos         EpkVideo[]
+  items          EpkItem[]
+  shareLinks     ShareLink[]
+}
+
+model EpkPhoto {
+  id        String   @id @default(cuid())
+  imageKey  String                 // cle R2
+  position  Int      @default(0)
+  epk       Epk      @relation(fields: [epkId], references: [id], onDelete: Cascade)
+  epkId     String
+
+  @@index([epkId])
+}
+
+model EpkVideo {
+  id        String   @id @default(cuid())
+  url       String                 // lien YouTube
+  title     String?
+  position  Int      @default(0)
+  epk       Epk      @relation(fields: [epkId], references: [id], onDelete: Cascade)
+  epkId     String
+
+  @@index([epkId])
+}
+
+// Element de musique selectionne pour l'EPK : soit un titre, soit un projet.
+model EpkItem {
+  id         String   @id @default(cuid())
+  position   Int      @default(0)
+  trackId    String?
+  projectId  String?
+  epk        Epk      @relation(fields: [epkId], references: [id], onDelete: Cascade)
+  epkId      String
+
+  @@index([epkId])
 }

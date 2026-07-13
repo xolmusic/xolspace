@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { resolveShare } from "@/lib/share";
 import { projectTypeLabel, fmtDuration } from "@/lib/display";
 import PublicPlayer from "@/components/PublicPlayer";
+import EpkPublic, { buildEpkMusic } from "@/components/EpkPublic";
 import PasswordGate from "./PasswordGate";
 import { signedGetUrl } from "@/lib/storage";
 import Cover from "@/components/Cover";
@@ -194,6 +195,56 @@ export default async function SharePage({
             title: t.title,
             subtitle: fmtDuration(t.durationSec),
           }))}
+        />
+      </Shell>
+    );
+  }
+
+  if (link.targetType === "EPK" && link.epk) {
+    const epk = link.epk;
+    // Charger les titres et projets references par l'EPK pour la musique.
+    const trackIds = epk.items.map((i: { trackId: string | null }) => i.trackId).filter(Boolean) as string[];
+    const projectIds = epk.items.map((i: { projectId: string | null }) => i.projectId).filter(Boolean) as string[];
+
+    const [tracks, projects] = await Promise.all([
+      trackIds.length
+        ? prisma.track.findMany({ where: { id: { in: trackIds } } })
+        : Promise.resolve([]),
+      projectIds.length
+        ? prisma.project.findMany({
+            where: { id: { in: projectIds } },
+            include: { tracks: { orderBy: { position: "asc" } } },
+          })
+        : Promise.resolve([]),
+    ]);
+
+    const tracksById = new Map(
+      tracks.map((t: { id: string; title: string; durationSec: number | null }) => [t.id, t])
+    );
+    const projectsById = new Map(
+      projects.map((p: { id: string; tracks: { id: string; title: string; durationSec: number | null; position: number }[] }) => [p.id, p])
+    );
+    const music = buildEpkMusic(epk.items, tracksById as never, projectsById as never);
+
+    return (
+      <Shell>
+        <EpkPublic
+          token={token}
+          password={pw}
+          epk={{
+            tagline: epk.tagline,
+            bio: epk.bio,
+            facebook: epk.facebook,
+            tiktok: epk.tiktok,
+            instagram: epk.instagram,
+            spotify: epk.spotify,
+            appleMusic: epk.appleMusic,
+            bookingEmail: epk.bookingEmail,
+            artist: { stageName: epk.artist.stageName, country: epk.artist.country },
+            photos: epk.photos,
+            videos: epk.videos,
+          }}
+          music={music}
         />
       </Shell>
     );

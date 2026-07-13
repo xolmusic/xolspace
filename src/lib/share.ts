@@ -21,6 +21,14 @@ async function loadLink(token: string) {
       project: { include: { tracks: { orderBy: { position: "asc" } }, artist: true } },
       track: { include: { artist: true, project: true } },
       artist: { include: { tracks: { orderBy: { createdAt: "desc" } } } },
+      epk: {
+        include: {
+          artist: true,
+          photos: { orderBy: { position: "asc" } },
+          videos: { orderBy: { position: "asc" } },
+          items: { orderBy: { position: "asc" } },
+        },
+      },
     },
   });
 }

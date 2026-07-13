@@ -7,6 +7,7 @@ const targetLabel: Record<string, string> = {
   PROJECT: "Projet",
   TRACK: "Titre",
   ARTIST: "Artiste",
+  EPK: "EPK",
 };
 
 export default async function LinksPage() {
@@ -16,6 +17,7 @@ export default async function LinksPage() {
       project: true,
       track: true,
       artist: true,
+      epk: { include: { artist: true } },
     },
   });
 
@@ -32,7 +34,13 @@ export default async function LinksPage() {
   );
 
   function targetName(l: (typeof links)[number]) {
-    return l.project?.title ?? l.track?.title ?? l.artist?.stageName ?? "—";
+    return (
+      l.project?.title ??
+      l.track?.title ??
+      l.artist?.stageName ??
+      (l.epk ? `EPK — ${l.epk.artist.stageName}` : null) ??
+      "—"
+    );
   }
 
   const base = appUrl();
