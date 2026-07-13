@@ -45,7 +45,7 @@ export default function TrackEditForm({
 
   return (
     <>
-      <button className="btn btn-sm" onClick={() => setOpen(true)} type="button">
+      <button className="btn btn-xs" onClick={() => setOpen(true)} type="button">
         Modifier
       </button>
 

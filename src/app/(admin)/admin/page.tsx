@@ -32,9 +32,9 @@ export default async function DashboardPage() {
   ];
 
   return (
-    <div className="stack" style={{ gap: 28 }}>
+    <div className="stack" style={{ gap: 22 }}>
       <div>
-        <h1 style={{ fontSize: 26 }}>Vue d&apos;ensemble</h1>
+        <h1 style={{ fontSize: 24 }}>Vue d&apos;ensemble</h1>
         <p className="muted">Le catalogue XOL en un coup d&apos;œil.</p>
       </div>
 
@@ -45,7 +45,7 @@ export default async function DashboardPage() {
         {metrics.map((m) => (
           <Link key={m.label} href={m.href} className="card" style={{ padding: 18 }}>
             <div style={{ fontSize: 13, color: "var(--text-soft)" }}>{m.label}</div>
-            <div style={{ fontSize: 30, fontFamily: "var(--font-title)", fontWeight: 700 }}>
+            <div style={{ fontSize: 26, fontFamily: "var(--font-title)", fontWeight: 700 }}>
               {m.value}
             </div>
           </Link>

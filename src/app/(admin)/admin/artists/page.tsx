@@ -9,11 +9,11 @@ export default async function ArtistsPage() {
   });
 
   return (
-    <div className="stack" style={{ gap: 24 }}>
+    <div className="stack" style={{ gap: 20 }}>
       <div className="row" style={{ justifyContent: "space-between" }}>
         <div>
-          <h1 style={{ fontSize: 26 }}>Artistes</h1>
-          <p className="muted">Les artistes du label et leurs dossiers.</p>
+          <h1 style={{ fontSize: 24 }}>Artistes</h1>
+          <p className="muted" style={{ fontSize: 14 }}>Les artistes du label et leurs catalogues.</p>
         </div>
         <ArtistCreateForm />
       </div>
@@ -23,29 +23,39 @@ export default async function ArtistsPage() {
           <p className="muted">Aucun artiste. Ajoute le premier avec le bouton ci-dessus.</p>
         </div>
       ) : (
-        <div
-          className="grid"
-          style={{ gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))" }}
-        >
-          {artists.map((a: (typeof artists)[number]) => (
-            <Link key={a.id} href={`/admin/artists/${a.id}`} className="card">
-              <div className="row" style={{ gap: 14 }}>
-                <Avatar photoKey={a.photoKey} name={a.stageName} />
-                <div style={{ minWidth: 0 }}>
-                  <div style={{ fontWeight: 600, fontFamily: "var(--font-title)" }}>
-                    {a.stageName}
-                  </div>
-                  <div style={{ fontSize: 13, color: "var(--text-soft)" }}>
-                    {a.country || "—"}
-                  </div>
-                </div>
-              </div>
-              <div style={{ fontSize: 13, color: "var(--text-mute)", marginTop: 14 }}>
-                {a._count.projects} projet{a._count.projects > 1 ? "s" : ""} ·{" "}
-                {a._count.tracks} titre{a._count.tracks > 1 ? "s" : ""}
-              </div>
-            </Link>
-          ))}
+        <div className="card" style={{ padding: 0, overflow: "hidden" }}>
+          <table className="tbl">
+            <thead>
+              <tr>
+                <th style={{ width: 40 }}></th>
+                <th>Nom d&apos;artiste</th>
+                <th>Pays</th>
+                <th style={{ textAlign: "right" }}>Projets</th>
+                <th style={{ textAlign: "right" }}>Titres</th>
+              </tr>
+            </thead>
+            <tbody>
+              {artists.map((a: (typeof artists)[number]) => (
+                <tr key={a.id}>
+                  <td>
+                    <Avatar photoKey={a.photoKey} name={a.stageName} />
+                  </td>
+                  <td>
+                    <Link href={`/admin/artists/${a.id}`} className="t-title" style={{ color: "var(--xol-indigo)" }}>
+                      {a.stageName}
+                    </Link>
+                  </td>
+                  <td className="t-sub">{a.country || "—"}</td>
+                  <td className="t-sub" style={{ textAlign: "right", fontVariantNumeric: "tabular-nums" }}>
+                    {a._count.projects}
+                  </td>
+                  <td className="t-sub" style={{ textAlign: "right", fontVariantNumeric: "tabular-nums" }}>
+                    {a._count.tracks}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
     </div>
@@ -53,7 +63,7 @@ export default async function ArtistsPage() {
 }
 
 function Avatar({ photoKey, name }: { photoKey: string | null; name: string }) {
-  const size = 52;
+  const size = 34;
   if (photoKey)
     // eslint-disable-next-line @next/next/no-img-element
     return (
@@ -76,6 +86,7 @@ function Avatar({ photoKey, name }: { photoKey: string | null; name: string }) {
         placeItems: "center",
         fontFamily: "var(--font-title)",
         fontWeight: 600,
+        fontSize: 12,
       }}
     >
       {name.slice(0, 2).toUpperCase()}

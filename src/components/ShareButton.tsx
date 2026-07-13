@@ -23,7 +23,7 @@ export default function ShareButton({ targetType, targetId, returnTo, small }: P
   return (
     <>
       <button
-        className={`btn ${small ? "btn-sm" : ""}`}
+        className={`btn ${small ? "btn-xs" : ""}`}
         onClick={() => setOpen(true)}
         type="button"
       >

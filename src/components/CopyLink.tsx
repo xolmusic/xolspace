@@ -16,7 +16,7 @@ export default function CopyLink({ url }: { url: string }) {
   }
 
   return (
-    <button onClick={copy} className="btn btn-sm" type="button">
+    <button onClick={copy} className="btn btn-xs" type="button">
       {copied ? "Copié" : "Copier le lien"}
     </button>
   );

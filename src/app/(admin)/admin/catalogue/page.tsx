@@ -1,6 +1,8 @@
+import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { fmtDuration } from "@/lib/display";
-import AudioPlayer from "@/components/AudioPlayer";
+import Cover from "@/components/Cover";
+import MiniPlayer from "@/components/MiniPlayer";
 import ShareButton from "@/components/ShareButton";
 import TrackEditForm from "@/components/TrackEditForm";
 import CatalogueUpload from "./CatalogueUpload";
@@ -24,12 +26,12 @@ export default async function CataloguePage() {
   }));
 
   return (
-    <div className="stack" style={{ gap: 24 }}>
+    <div className="stack" style={{ gap: 20 }}>
       <div className="row" style={{ justifyContent: "space-between", alignItems: "flex-start" }}>
         <div>
-          <h1 style={{ fontSize: 26 }}>Catalogue</h1>
-          <p className="muted">
-            Tous les titres du label. Un titre peut vivre seul ou dans un projet.
+          <h1 style={{ fontSize: 24 }}>Catalogue</h1>
+          <p className="muted" style={{ fontSize: 14 }}>
+            {tracks.length} titre{tracks.length > 1 ? "s" : ""} · un titre peut vivre seul ou dans un projet.
           </p>
         </div>
         <CatalogueUpload artists={artistOpts} />
@@ -38,50 +40,88 @@ export default async function CataloguePage() {
       {tracks.length === 0 ? (
         <div className="card">
           <p className="muted">
-            Aucun titre pour l&apos;instant. Ajoute-en un avec le bouton ci-dessus, ou depuis un projet.
+            Aucun titre. Ajoute-en un avec le bouton ci-dessus, ou depuis un projet.
           </p>
         </div>
       ) : (
-        <div className="stack" style={{ gap: 10 }}>
-          {tracks.map((t: (typeof tracks)[number]) => (
-            <div key={t.id} className="card" style={{ padding: 14 }}>
-              <AudioPlayer
-                src={`/api/admin-stream/track/${t.id}`}
-                title={t.title}
-                subtitle={[
-                  t.artist.stageName,
-                  t.project ? t.project.title : "Titre libre",
-                  t.genre,
-                  fmtDuration(t.durationSec),
-                ]
-                  .filter(Boolean)
-                  .join(" · ")}
-              />
-              <div className="row" style={{ justifyContent: "flex-end", gap: 8, marginTop: 10 }}>
-                <ShareButton targetType="TRACK" targetId={t.id} returnTo="/admin/catalogue" small />
-                <TrackEditForm
-                  track={{
-                    id: t.id,
-                    title: t.title,
-                    artistId: t.artistId,
-                    projectId: t.projectId,
-                    genre: t.genre,
-                    bpm: t.bpm,
-                    songKey: t.songKey,
-                    isrc: t.isrc,
-                  }}
-                  artists={artistOpts}
-                  projects={projectOpts}
-                />
-                <form action={deleteTrack}>
-                  <input type="hidden" name="id" value={t.id} />
-                  <button className="btn btn-sm" type="submit" style={{ color: "var(--xol-carmin)" }}>
-                    Supprimer
-                  </button>
-                </form>
-              </div>
-            </div>
-          ))}
+        <div className="card" style={{ padding: 0, overflow: "hidden" }}>
+          <table className="tbl">
+            <thead>
+              <tr>
+                <th style={{ width: 34 }}></th>
+                <th>Titre</th>
+                <th>Projet</th>
+                <th>Artiste</th>
+                <th>Genre</th>
+                <th style={{ textAlign: "right" }}>Durée</th>
+                <th style={{ textAlign: "right" }}>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {tracks.map((t: (typeof tracks)[number]) => (
+                <tr key={t.id}>
+                  <td>
+                    <div className="miniplay">
+                      <Cover
+                        src={t.project?.coverKey ? `/api/img/${t.project.coverKey}` : null}
+                        size={34}
+                        radius={6}
+                      />
+                    </div>
+                  </td>
+                  <td>
+                    <div className="row" style={{ gap: 8 }}>
+                      <MiniPlayer src={`/api/admin-stream/track/${t.id}`} />
+                      <span className="t-title">{t.title}</span>
+                    </div>
+                  </td>
+                  <td className="t-sub">
+                    {t.project ? (
+                      <Link href={`/admin/projects/${t.project.id}`} style={{ color: "var(--xol-indigo)" }}>
+                        {t.project.title}
+                      </Link>
+                    ) : (
+                      <span className="badge">Titre libre</span>
+                    )}
+                  </td>
+                  <td className="t-sub">
+                    <Link href={`/admin/artists/${t.artistId}`} style={{ color: "var(--xol-indigo)" }}>
+                      {t.artist.stageName}
+                    </Link>
+                  </td>
+                  <td className="t-sub">{t.genre || "—"}</td>
+                  <td className="t-sub" style={{ textAlign: "right", fontVariantNumeric: "tabular-nums" }}>
+                    {fmtDuration(t.durationSec)}
+                  </td>
+                  <td>
+                    <div className="tbl-actions">
+                      <ShareButton targetType="TRACK" targetId={t.id} returnTo="/admin/catalogue" small />
+                      <TrackEditForm
+                        track={{
+                          id: t.id,
+                          title: t.title,
+                          artistId: t.artistId,
+                          projectId: t.projectId,
+                          genre: t.genre,
+                          bpm: t.bpm,
+                          songKey: t.songKey,
+                          isrc: t.isrc,
+                        }}
+                        artists={artistOpts}
+                        projects={projectOpts}
+                      />
+                      <form action={deleteTrack}>
+                        <input type="hidden" name="id" value={t.id} />
+                        <button className="btn btn-xs btn-ghost" type="submit" style={{ color: "var(--text-mute)" }}>
+                          ✕
+                        </button>
+                      </form>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
     </div>
