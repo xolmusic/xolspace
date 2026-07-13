@@ -102,3 +102,40 @@ export async function deleteTrack(formData: FormData) {
     revalidatePath("/admin/catalogue");
   }
 }
+
+// Remplace le fichier audio d'un titre (nouveau mix, master corrige) sans
+// recreer l'entree : les liens de partage, le placement et l'historique sont
+// conserves. Le nouveau MP3 a deja ete envoye dans R2 (upload direct) ; on
+// bascule la cle audio du titre dessus et on supprime l'ancien fichier.
+export async function replaceTrackAudio(_prev: unknown, formData: FormData) {
+  await requireAdmin();
+  const id = String(formData.get("id"));
+  const audioId = String(formData.get("audioId") ?? "").trim();
+  if (!audioId) return { error: "Le nouveau fichier n'a pas été envoyé." };
+
+  const track = await prisma.track.findUnique({ where: { id } });
+  if (!track) return { error: "Titre introuvable." };
+
+  const newKey = keys.trackAudio(audioId);
+  const oldKey = track.audioKey;
+
+  await prisma.track.update({
+    where: { id },
+    data: {
+      audioKey: newKey,
+      durationSec: formData.get("durationSec")
+        ? Math.round(Number(formData.get("durationSec")))
+        : track.durationSec,
+    },
+  });
+
+  // Supprimer l'ancien fichier de R2 (s'il differe du nouveau).
+  if (oldKey && oldKey !== newKey) {
+    await deleteObject(oldKey).catch(() => {});
+  }
+
+  if (track.projectId) revalidatePath(`/admin/projects/${track.projectId}`);
+  revalidatePath(`/admin/artists/${track.artistId}`);
+  revalidatePath("/admin/catalogue");
+  return { ok: true };
+}
