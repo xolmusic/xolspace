@@ -2,6 +2,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import ArtistCreateForm from "./ArtistCreateForm";
 import { relationTypeLabel, relationTypeBadge } from "@/lib/display";
+import FilterSelect from "@/components/FilterSelect";
 
 export default async function ArtistsPage({
   searchParams,
@@ -28,10 +29,16 @@ export default async function ArtistsPage({
         <ArtistCreateForm />
       </div>
 
-      <div className="row" style={{ gap: 6 }}>
-        <FilterTab label="Tous" href="/admin/artists" active={!relation} />
-        <FilterTab label="Label" href="/admin/artists?relation=LABEL" active={relation === "LABEL"} />
-        <FilterTab label="Externes" href="/admin/artists?relation=EXTERNAL" active={relation === "EXTERNAL"} />
+      <div className="row" style={{ gap: 10 }}>
+        <FilterSelect
+          param="relation"
+          value={relation}
+          allLabel="Tous les artistes"
+          options={[
+            { value: "LABEL", label: "Label" },
+            { value: "EXTERNAL", label: "Externes" },
+          ]}
+        />
       </div>
 
       {artists.length === 0 ? (
@@ -111,10 +118,3 @@ function Avatar({ photoKey, name }: { photoKey: string | null; name: string }) {
   );
 }
 
-function FilterTab({ label, href, active }: { label: string; href: string; active: boolean }) {
-  return (
-    <a href={href} className={`btn btn-xs ${active ? "btn-primary" : ""}`}>
-      {label}
-    </a>
-  );
-}

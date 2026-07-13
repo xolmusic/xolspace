@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { fmtDate } from "@/lib/display";
 import { contactTypeLabel, CONTACT_TYPES } from "@/lib/display";
 import ContactCreateForm from "./ContactCreateForm";
+import FilterSelect from "@/components/FilterSelect";
 
 export default async function CrmPage({
   searchParams,
@@ -55,22 +56,20 @@ export default async function CrmPage({
         <ContactCreateForm />
       </div>
 
-      <div className="stack" style={{ gap: 8 }}>
-        <div className="row" style={{ gap: 6, flexWrap: "wrap", alignItems: "center" }}>
-          <span style={{ fontSize: 12, color: "var(--text-mute)", marginRight: 2 }}>Type :</span>
-          <FilterChip label="Tous" href={buildHref(null, country)} active={!type} />
-          {CONTACT_TYPES.map((t) => (
-            <FilterChip key={t} label={contactTypeLabel[t]} href={buildHref(t, country)} active={type === t} />
-          ))}
-        </div>
+      <div className="row" style={{ gap: 10, flexWrap: "wrap", alignItems: "center" }}>
+        <FilterSelect
+          param="type"
+          value={type}
+          allLabel="Tous les types"
+          options={CONTACT_TYPES.map((t) => ({ value: t, label: contactTypeLabel[t] }))}
+        />
         {usedCountries.length > 0 && (
-          <div className="row" style={{ gap: 6, flexWrap: "wrap", alignItems: "center" }}>
-            <span style={{ fontSize: 12, color: "var(--text-mute)", marginRight: 2 }}>Pays :</span>
-            <FilterChip label="Tous" href={buildHref(type, null)} active={!country} />
-            {usedCountries.map((c: string) => (
-              <FilterChip key={c} label={c} href={buildHref(type, c)} active={country === c} />
-            ))}
-          </div>
+          <FilterSelect
+            param="country"
+            value={country}
+            allLabel="Tous les pays"
+            options={usedCountries.map((c: string) => ({ value: c, label: c }))}
+          />
         )}
       </div>
 
@@ -157,18 +156,4 @@ export default async function CrmPage({
   );
 }
 
-function buildHref(type: string | null | undefined, country: string | null | undefined) {
-  const p = new URLSearchParams();
-  if (type) p.set("type", type);
-  if (country) p.set("country", country);
-  const qs = p.toString();
-  return qs ? `/admin/crm?${qs}` : "/admin/crm";
-}
 
-function FilterChip({ label, href, active }: { label: string; href: string; active: boolean }) {
-  return (
-    <a href={href} className={`btn btn-xs ${active ? "btn-primary" : ""}`}>
-      {label}
-    </a>
-  );
-}
