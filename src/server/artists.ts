@@ -74,16 +74,12 @@ export async function deleteArtist(formData: FormData) {
   const id = String(formData.get("id"));
   const artist = await prisma.artist.findUnique({
     where: { id },
-    include: { tracks: true, demos: true },
+    include: { tracks: true },
   });
   if (artist?.photoKey) await deleteObject(artist.photoKey);
-  // Les masters/streams des tracks et demos sont nettoyes par leurs cascades DB ;
-  // pour R2 on supprime les objets connus.
+  // Les fichiers audio des titres sont nettoyes cote R2.
   for (const t of artist?.tracks ?? []) {
     await deleteObject(keys.trackAudio(t.id));
-  }
-  for (const d of artist?.demos ?? []) {
-    await deleteObject(keys.demoAudio(d.id));
   }
   await prisma.artist.delete({ where: { id } });
   revalidatePath("/admin/artists");

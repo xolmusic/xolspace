@@ -152,33 +152,9 @@ export default async function SharePage({
     );
   }
 
-  if (link.targetType === "DEMO" && link.demo) {
-    const d = link.demo;
-    return (
-      <Shell>
-        <div style={{ marginBottom: 28 }}>
-          <span className="badge">Demo</span>
-          <h1 style={{ fontSize: 26, marginTop: 8 }}>{d.title}</h1>
-          <p className="muted">{d.artist.stageName}</p>
-        </div>
-        <PublicPlayer
-          token={token}
-          password={pw}
-          items={[
-            {
-              id: d.id,
-              title: d.title,
-              subtitle: fmtDuration(d.durationSec),
-            },
-          ]}
-        />
-      </Shell>
-    );
-  }
-
   if (link.targetType === "ARTIST" && link.artist) {
     const a = link.artist;
-    const demos = a.demos;
+    const tracks = a.tracks;
     return (
       <Shell>
         <div style={{ marginBottom: 28 }}>
@@ -186,14 +162,14 @@ export default async function SharePage({
           <p className="muted">{a.country || ""}</p>
           {a.bio && <p style={{ marginTop: 10, maxWidth: 560 }}>{a.bio}</p>}
         </div>
-        <h2 style={{ fontSize: 17, marginBottom: 12 }}>Demos</h2>
+        <h2 style={{ fontSize: 17, marginBottom: 12 }}>Titres</h2>
         <PublicPlayer
           token={token}
           password={pw}
-          items={demos.map((d: (typeof demos)[number]) => ({
-            id: d.id,
-            title: d.title,
-            subtitle: fmtDuration(d.durationSec),
+          items={tracks.map((t: (typeof tracks)[number]) => ({
+            id: t.id,
+            title: t.title,
+            subtitle: fmtDuration(t.durationSec),
           }))}
         />
       </Shell>

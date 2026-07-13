@@ -11,14 +11,14 @@ export async function POST(req: NextRequest) {
   if (!session) return new NextResponse("Unauthorized", { status: 401 });
 
   const { kind, contentType } = await req.json();
-  if (kind !== "track" && kind !== "demo") {
+  if (kind !== "track") {
     return new NextResponse("Type invalide", { status: 400 });
   }
 
   // On genere l'identifiant du futur enregistrement cote serveur pour
   // construire une cle R2 stable, puis on le renvoie au client.
   const id = createId();
-  const key = kind === "track" ? keys.trackAudio(id) : keys.demoAudio(id);
+  const key = keys.trackAudio(id);
   const uploadUrl = await signedPutUrl(key, contentType || "audio/mpeg");
 
   return NextResponse.json({ id, key, uploadUrl });

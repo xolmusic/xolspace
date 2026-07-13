@@ -6,7 +6,6 @@ import { revokeLink, restoreLink, deleteLink } from "@/server/links";
 const targetLabel: Record<string, string> = {
   PROJECT: "Projet",
   TRACK: "Chanson",
-  DEMO: "Demo",
   ARTIST: "Artiste",
 };
 
@@ -16,7 +15,6 @@ export default async function LinksPage() {
     include: {
       project: true,
       track: true,
-      demo: true,
       artist: true,
     },
   });
@@ -25,7 +23,6 @@ export default async function LinksPage() {
     return (
       l.project?.title ??
       l.track?.title ??
-      l.demo?.title ??
       l.artist?.stageName ??
       "—"
     );

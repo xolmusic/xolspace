@@ -33,7 +33,6 @@ export async function createShareLink(_prev: unknown, formData: FormData) {
 
   if (targetType === "PROJECT") data.projectId = targetId;
   else if (targetType === "TRACK") data.trackId = targetId;
-  else if (targetType === "DEMO") data.demoId = targetId;
   else if (targetType === "ARTIST") data.artistId = targetId;
 
   await prisma.shareLink.create({ data: data as never });

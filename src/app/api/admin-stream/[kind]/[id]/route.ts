@@ -18,9 +18,6 @@ export async function GET(
   if (kind === "track") {
     const t = await prisma.track.findUnique({ where: { id } });
     audioKey = t?.audioKey ?? null;
-  } else if (kind === "demo") {
-    const d = await prisma.demo.findUnique({ where: { id } });
-    audioKey = d?.audioKey ?? null;
   }
 
   if (!audioKey) return new NextResponse("Not found", { status: 404 });

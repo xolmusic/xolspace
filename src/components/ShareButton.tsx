@@ -4,7 +4,7 @@ import { useActionState, useState } from "react";
 import { createShareLink } from "@/server/links";
 
 type Props = {
-  targetType: "PROJECT" | "TRACK" | "DEMO" | "ARTIST";
+  targetType: "PROJECT" | "TRACK" | "ARTIST";
   targetId: string;
   returnTo: string;
   small?: boolean;
@@ -17,7 +17,6 @@ export default function ShareButton({ targetType, targetId, returnTo, small }: P
   const labels = {
     PROJECT: "ce projet",
     TRACK: "cette chanson",
-    DEMO: "cette demo",
     ARTIST: "cet artiste",
   };
 

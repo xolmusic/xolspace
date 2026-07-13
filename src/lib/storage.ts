@@ -79,5 +79,4 @@ export const keys = {
   projectCover: (projectId: string, ext: string) =>
     `projects/${projectId}/cover.${ext}`,
   trackAudio: (trackId: string) => `audio/tracks/${trackId}.mp3`,
-  demoAudio: (demoId: string) => `audio/demos/${demoId}.mp3`,
 };

@@ -1,7 +1,6 @@
-// Schema XOL Catalog — catalogue d'ecoute du label
-// PostgreSQL (Neon). Modele simplifie : un seul fichier audio (MP3) par
-// titre ou demo, uploade directement dans R2 depuis le navigateur.
-// Ecoute uniquement — pas de telechargement.
+// Schema XOL Catalog — catalogue de titres du label
+// Un titre appartient a un artiste, et PEUT (facultatif) etre rattache a
+// un projet. Ecoute uniquement, upload direct MP3 dans R2.
 
 generator client {
   provider = "prisma-client-js"
@@ -31,7 +30,6 @@ model Artist {
 
   projects     Project[]
   tracks       Track[]
-  demos        Demo[]
   shareLinks   ShareLink[]
 
   @@index([stageName])
@@ -72,55 +70,38 @@ model Project {
   @@index([artistId])
 }
 
+// Un titre. Toujours rattache a un artiste ; le projet est facultatif.
 model Track {
   id             String    @id @default(cuid())
   title          String
-  position       Int       @default(1)
+  position       Int       @default(0)      // ordre dans le projet (si projet)
+  genre          String?                    // style du titre
   isrc           String?
   bpm            Int?
   songKey        String?
   durationSec    Int?
-  audioKey       String                    // cle R2 du MP3 (ecoute)
+  audioKey       String
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
 
-  project        Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  projectId      String
   artist         Artist    @relation(fields: [artistId], references: [id], onDelete: Cascade)
   artistId       String
 
+  project        Project?  @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  projectId      String?
+
   shareLinks     ShareLink[]
 
+  @@index([artistId])
   @@index([projectId])
-  @@index([artistId])
-}
-
-model Demo {
-  id             String    @id @default(cuid())
-  title          String
-  audioKey       String                    // cle R2 du MP3
-  durationSec    Int?
-  notes          String?
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
-
-  artist         Artist    @relation(fields: [artistId], references: [id], onDelete: Cascade)
-  artistId       String
-
-  shareLinks     ShareLink[]
-
-  @@index([artistId])
 }
 
 enum ShareTargetType {
   PROJECT
   TRACK
-  DEMO
   ARTIST
 }
 
-// Liens de partage publics : ecoute seule, revocable, expiration et
-// mot de passe optionnels. Plus de telechargement.
 model ShareLink {
   id             String          @id @default(cuid())
   token          String          @unique
@@ -138,8 +119,6 @@ model ShareLink {
   projectId      String?
   track          Track?          @relation(fields: [trackId], references: [id], onDelete: Cascade)
   trackId        String?
-  demo           Demo?           @relation(fields: [demoId], references: [id], onDelete: Cascade)
-  demoId         String?
   artist         Artist?         @relation(fields: [artistId], references: [id], onDelete: Cascade)
   artistId       String?
 

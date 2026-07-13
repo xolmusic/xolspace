@@ -3,6 +3,7 @@
 import { useActionState, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createProject, updateProject } from "@/server/projects";
+import GenreSelect from "@/components/GenreSelect";
 
 type Artist = { id: string; stageName: string };
 type Existing = {
@@ -103,7 +104,7 @@ export default function ProjectForm({
       <div className="grid" style={{ gridTemplateColumns: "1fr 1fr" }}>
         <div className="field">
           <label htmlFor="genre">Genre</label>
-          <input id="genre" name="genre" className="input" defaultValue={existing?.genre ?? ""} placeholder="Afro, jazz…" />
+          <GenreSelect id="genre" defaultValue={existing?.genre} />
         </div>
         <div className="field">
           <label htmlFor="releaseDate">Date de sortie</label>

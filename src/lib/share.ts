@@ -20,8 +20,7 @@ async function loadLink(token: string) {
     include: {
       project: { include: { tracks: { orderBy: { position: "asc" } }, artist: true } },
       track: { include: { artist: true, project: true } },
-      demo: { include: { artist: true } },
-      artist: { include: { demos: { orderBy: { createdAt: "desc" } } } },
+      artist: { include: { tracks: { orderBy: { createdAt: "desc" } } } },
     },
   });
 }

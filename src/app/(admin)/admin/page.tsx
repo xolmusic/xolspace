@@ -8,12 +8,12 @@ import {
 } from "@/lib/display";
 
 export default async function DashboardPage() {
-  const [artistCount, projectCount, trackCount, demoCount, linkCount, recent] =
+  const [artistCount, projectCount, trackCount, looseCount, linkCount, recent] =
     await Promise.all([
       prisma.artist.count(),
       prisma.project.count(),
       prisma.track.count(),
-      prisma.demo.count(),
+      prisma.track.count({ where: { projectId: null } }),
       prisma.shareLink.count({ where: { revoked: false } }),
       prisma.project.findMany({
         orderBy: { updatedAt: "desc" },
@@ -26,7 +26,7 @@ export default async function DashboardPage() {
     { label: "Artistes", value: artistCount, href: "/admin/artists" },
     { label: "Projets", value: projectCount, href: "/admin/projects" },
     { label: "Titres", value: trackCount, href: "/admin/projects" },
-    { label: "Demos", value: demoCount, href: "/admin/demos" },
+    { label: "Titres libres", value: looseCount, href: "/admin/catalogue" },
     { label: "Liens actifs", value: linkCount, href: "/admin/links" },
   ];
 

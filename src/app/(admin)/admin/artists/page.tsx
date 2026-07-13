@@ -5,7 +5,7 @@ import ArtistCreateForm from "./ArtistCreateForm";
 export default async function ArtistsPage() {
   const artists = await prisma.artist.findMany({
     orderBy: { stageName: "asc" },
-    include: { _count: { select: { projects: true, demos: true } } },
+    include: { _count: { select: { projects: true, tracks: true } } },
   });
 
   return (
@@ -42,7 +42,7 @@ export default async function ArtistsPage() {
               </div>
               <div style={{ fontSize: 13, color: "var(--text-mute)", marginTop: 14 }}>
                 {a._count.projects} projet{a._count.projects > 1 ? "s" : ""} ·{" "}
-                {a._count.demos} demo{a._count.demos > 1 ? "s" : ""}
+                {a._count.tracks} titre{a._count.tracks > 1 ? "s" : ""}
               </div>
             </Link>
           ))}

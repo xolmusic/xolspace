@@ -2,10 +2,11 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { projectTypeLabel, fmtDuration } from "@/lib/display";
-import DemoDropzone from "@/components/DemoDropzone";
+import SongUploader from "@/components/SongUploader";
 import AudioPlayer from "@/components/AudioPlayer";
 import ShareButton from "@/components/ShareButton";
-import { deleteDemo } from "@/server/tracks";
+import TrackEditForm from "@/components/TrackEditForm";
+import { deleteTrack } from "@/server/tracks";
 import ArtistEditForm from "./ArtistEditForm";
 
 export default async function ArtistDetailPage({
@@ -21,10 +22,26 @@ export default async function ArtistDetailPage({
         orderBy: { updatedAt: "desc" },
         include: { _count: { select: { tracks: true } } },
       },
-      demos: { orderBy: { createdAt: "desc" } },
+      tracks: {
+        orderBy: { createdAt: "desc" },
+        include: { project: true },
+      },
     },
   });
   if (!artist) notFound();
+
+  const [allArtists, allProjects] = await Promise.all([
+    prisma.artist.findMany({ orderBy: { stageName: "asc" } }),
+    prisma.project.findMany({ orderBy: { title: "asc" } }),
+  ]);
+  const artistOpts = allArtists.map((a: (typeof allArtists)[number]) => ({ id: a.id, stageName: a.stageName }));
+  const projectOpts = allProjects.map((p: (typeof allProjects)[number]) => ({
+    id: p.id,
+    title: p.title,
+    artistId: p.artistId,
+  }));
+
+  const looseTracks = artist.tracks.filter((t: (typeof artist.tracks)[number]) => !t.projectId);
 
   return (
     <div className="stack" style={{ gap: 28 }}>
@@ -69,16 +86,17 @@ export default async function ArtistDetailPage({
             targetId={artist.id}
             returnTo={`/admin/artists/${artist.id}`}
           />
-          <ArtistEditForm artist={{
-            id: artist.id,
-            stageName: artist.stageName,
-            country: artist.country,
-            bio: artist.bio,
-          }} />
+          <ArtistEditForm
+            artist={{
+              id: artist.id,
+              stageName: artist.stageName,
+              country: artist.country,
+              bio: artist.bio,
+            }}
+          />
         </div>
       </div>
 
-      {/* Projets */}
       <section>
         <div className="row" style={{ justifyContent: "space-between", marginBottom: 12 }}>
           <h2 style={{ fontSize: 18 }}>Projets</h2>
@@ -117,44 +135,48 @@ export default async function ArtistDetailPage({
         )}
       </section>
 
-      {/* Dossier demos */}
       <section>
-        <h2 style={{ fontSize: 18, marginBottom: 4 }}>Dossier de demos</h2>
+        <h2 style={{ fontSize: 18, marginBottom: 4 }}>Titres libres</h2>
         <p className="muted" style={{ fontSize: 14, marginBottom: 14 }}>
-          Fichiers de travail bruts, sans projet. Chaque demo a son propre lien de partage.
+          Titres de l&apos;artiste non rattachés à un projet — demos, inédits, work in progress.
+          Chacun a son lien de partage et peut être assigné à un projet à tout moment.
         </p>
-        <DemoDropzone artistId={artist.id} />
+        <SongUploader artistId={artist.id} variant="drop" />
 
-        {artist.demos.length > 0 && (
+        {looseTracks.length > 0 && (
           <div className="stack" style={{ gap: 10, marginTop: 16 }}>
-            {artist.demos.map((d: (typeof artist.demos)[number]) => {
-              const streamUrl = `/api/admin-stream/demo/${d.id}`;
-              return (
-                <div key={d.id} className="card" style={{ padding: 14 }}>
-                  <div style={{ marginBottom: 10 }}>
-                    <AudioPlayer
-                      src={streamUrl}
-                      title={d.title}
-                      subtitle={`Demo · ${fmtDuration(d.durationSec)}`}
-                    />
-                  </div>
-                  <div className="row" style={{ justifyContent: "flex-end", gap: 8 }}>
-                    <ShareButton
-                      targetType="DEMO"
-                      targetId={d.id}
-                      returnTo={`/admin/artists/${artist.id}`}
-                      small
-                    />
-                    <form action={deleteDemo}>
-                      <input type="hidden" name="id" value={d.id} />
-                      <button className="btn btn-sm" type="submit" style={{ color: "var(--xol-carmin)" }}>
-                        Supprimer
-                      </button>
-                    </form>
-                  </div>
+            {looseTracks.map((t: (typeof looseTracks)[number]) => (
+              <div key={t.id} className="card" style={{ padding: 14 }}>
+                <AudioPlayer
+                  src={`/api/admin-stream/track/${t.id}`}
+                  title={t.title}
+                  subtitle={[t.genre, fmtDuration(t.durationSec)].filter(Boolean).join(" · ") || "Titre libre"}
+                />
+                <div className="row" style={{ justifyContent: "flex-end", gap: 8, marginTop: 10 }}>
+                  <ShareButton targetType="TRACK" targetId={t.id} returnTo={`/admin/artists/${artist.id}`} small />
+                  <TrackEditForm
+                    track={{
+                      id: t.id,
+                      title: t.title,
+                      artistId: t.artistId,
+                      projectId: t.projectId,
+                      genre: t.genre,
+                      bpm: t.bpm,
+                      songKey: t.songKey,
+                      isrc: t.isrc,
+                    }}
+                    artists={artistOpts}
+                    projects={projectOpts}
+                  />
+                  <form action={deleteTrack}>
+                    <input type="hidden" name="id" value={t.id} />
+                    <button className="btn btn-sm" type="submit" style={{ color: "var(--xol-carmin)" }}>
+                      Supprimer
+                    </button>
+                  </form>
                 </div>
-              );
-            })}
+              </div>
+            ))}
           </div>
         )}
       </section>

@@ -19,9 +19,7 @@ export async function GET(
 
   let audioKey: string | null = null;
 
-  if (link.targetType === "DEMO" && link.demo && link.demo.id === trackId) {
-    audioKey = link.demo.audioKey;
-  } else if (link.targetType === "TRACK" && link.track && link.track.id === trackId) {
+  if (link.targetType === "TRACK" && link.track && link.track.id === trackId) {
     audioKey = link.track.audioKey;
   } else if (link.targetType === "PROJECT" && link.project) {
     const t = link.project.tracks.find(
@@ -29,10 +27,10 @@ export async function GET(
     );
     audioKey = t?.audioKey ?? null;
   } else if (link.targetType === "ARTIST" && link.artist) {
-    const d = link.artist.demos.find(
+    const t = link.artist.tracks.find(
       (x: { id: string; audioKey: string }) => x.id === trackId
     );
-    audioKey = d?.audioKey ?? null;
+    audioKey = t?.audioKey ?? null;
   }
 
   if (!audioKey) return new NextResponse("Introuvable", { status: 404 });

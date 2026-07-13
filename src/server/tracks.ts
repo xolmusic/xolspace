@@ -11,39 +11,82 @@ async function requireAdmin() {
   if (!s) redirect("/login");
 }
 
-// --- Tracks ---
-// Le fichier a deja ete envoye directement dans R2 par le navigateur.
-// Ici on ne recoit que des metadonnees legeres : on cree l'enregistrement.
+// Ajoute un titre. Le fichier MP3 est deja dans R2 (upload direct navigateur).
+// Le titre est rattache a un artiste, et facultativement a un projet.
 export async function addTrack(_prev: unknown, formData: FormData) {
   await requireAdmin();
-  const projectId = String(formData.get("projectId"));
   const title = String(formData.get("title") ?? "").trim();
   const audioId = String(formData.get("audioId") ?? "").trim();
+  const projectId = String(formData.get("projectId") ?? "").trim() || null;
+  let artistId = String(formData.get("artistId") ?? "").trim() || null;
 
   if (!title) return { error: "Donne un titre à la chanson." };
   if (!audioId) return { error: "Le fichier n'a pas été envoyé." };
 
-  const project = await prisma.project.findUnique({ where: { id: projectId } });
-  if (!project) return { error: "Projet introuvable." };
+  let position = 0;
+  if (projectId) {
+    const project = await prisma.project.findUnique({ where: { id: projectId } });
+    if (!project) return { error: "Projet introuvable." };
+    artistId = project.artistId; // dans un projet, l'artiste suit le projet
+    position = await prisma.track.count({ where: { projectId } });
+  }
 
-  const count = await prisma.track.count({ where: { projectId } });
+  if (!artistId) return { error: "Choisis un artiste." };
+
   await prisma.track.create({
     data: {
       title,
+      artistId,
       projectId,
-      artistId: project.artistId,
-      position: count + 1,
+      position,
       audioKey: keys.trackAudio(audioId),
+      genre: String(formData.get("genre") ?? "").trim() || null,
       durationSec: formData.get("durationSec")
         ? Math.round(Number(formData.get("durationSec")))
         : null,
-      isrc: String(formData.get("isrc") ?? "").trim() || null,
-      bpm: formData.get("bpm") ? Number(formData.get("bpm")) : null,
-      songKey: String(formData.get("songKey") ?? "").trim() || null,
     },
   });
 
-  revalidatePath(`/admin/projects/${projectId}`);
+  if (projectId) revalidatePath(`/admin/projects/${projectId}`);
+  if (artistId) revalidatePath(`/admin/artists/${artistId}`);
+  revalidatePath("/admin/catalogue");
+  return { ok: true };
+}
+
+// Modifie un titre : nom, artiste, projet (ou aucun), genre, et metadonnees.
+export async function updateTrack(_prev: unknown, formData: FormData) {
+  await requireAdmin();
+  const id = String(formData.get("id"));
+  const title = String(formData.get("title") ?? "").trim();
+  if (!title) return { error: "Le titre est obligatoire." };
+
+  const projectId = String(formData.get("projectId") ?? "").trim() || null;
+  let artistId = String(formData.get("artistId") ?? "").trim() || null;
+
+  // Si un projet est choisi, l'artiste suit le projet (coherence).
+  if (projectId) {
+    const project = await prisma.project.findUnique({ where: { id: projectId } });
+    if (!project) return { error: "Projet introuvable." };
+    artistId = project.artistId;
+  }
+  if (!artistId) return { error: "Choisis un artiste." };
+
+  await prisma.track.update({
+    where: { id },
+    data: {
+      title,
+      artistId,
+      projectId,
+      genre: String(formData.get("genre") ?? "").trim() || null,
+      bpm: formData.get("bpm") ? Number(formData.get("bpm")) : null,
+      songKey: String(formData.get("songKey") ?? "").trim() || null,
+      isrc: String(formData.get("isrc") ?? "").trim() || null,
+    },
+  });
+
+  revalidatePath("/admin/catalogue");
+  if (projectId) revalidatePath(`/admin/projects/${projectId}`);
+  revalidatePath(`/admin/artists/${artistId}`);
   return { ok: true };
 }
 
@@ -54,43 +97,8 @@ export async function deleteTrack(formData: FormData) {
   if (track) {
     await deleteObject(track.audioKey);
     await prisma.track.delete({ where: { id } });
-    revalidatePath(`/admin/projects/${track.projectId}`);
-  }
-}
-
-// --- Demos ---
-export async function addDemo(_prev: unknown, formData: FormData) {
-  await requireAdmin();
-  const artistId = String(formData.get("artistId"));
-  const audioId = String(formData.get("audioId") ?? "").trim();
-  const title =
-    String(formData.get("title") ?? "").trim() || "Demo";
-
-  if (!audioId) return { error: "Le fichier n'a pas été envoyé." };
-
-  await prisma.demo.create({
-    data: {
-      title,
-      artistId,
-      audioKey: keys.demoAudio(audioId),
-      durationSec: formData.get("durationSec")
-        ? Math.round(Number(formData.get("durationSec")))
-        : null,
-      notes: String(formData.get("notes") ?? "").trim() || null,
-    },
-  });
-
-  revalidatePath(`/admin/artists/${artistId}`);
-  return { ok: true };
-}
-
-export async function deleteDemo(formData: FormData) {
-  await requireAdmin();
-  const id = String(formData.get("id"));
-  const demo = await prisma.demo.findUnique({ where: { id } });
-  if (demo) {
-    await deleteObject(demo.audioKey);
-    await prisma.demo.delete({ where: { id } });
-    revalidatePath(`/admin/artists/${demo.artistId}`);
+    if (track.projectId) revalidatePath(`/admin/projects/${track.projectId}`);
+    revalidatePath(`/admin/artists/${track.artistId}`);
+    revalidatePath("/admin/catalogue");
   }
 }

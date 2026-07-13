@@ -1,0 +1,13 @@
+.vercel
+.env*
+
+node_modules
+.next
+*.log
+.DS_Store
+tsconfig.tsbuildinfo
+node_modules
+node_modules
+.next
+.DS_Store
+tsconfig.tsbuildinfo

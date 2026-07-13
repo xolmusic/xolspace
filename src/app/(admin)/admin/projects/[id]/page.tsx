@@ -9,7 +9,8 @@ import {
   fmtDuration,
 } from "@/lib/display";
 import AudioPlayer from "@/components/AudioPlayer";
-import TrackUploader from "@/components/TrackUploader";
+import SongUploader from "@/components/SongUploader";
+import TrackEditForm from "@/components/TrackEditForm";
 import ShareButton from "@/components/ShareButton";
 import { deleteTrack } from "@/server/tracks";
 import { deleteProject as _rm } from "@/server/projects";
@@ -29,6 +30,13 @@ export default async function ProjectDetailPage({
     },
   });
   if (!project) notFound();
+
+  const [allArtists, allProjects] = await Promise.all([
+    prisma.artist.findMany({ orderBy: { stageName: "asc" } }),
+    prisma.project.findMany({ orderBy: { title: "asc" } }),
+  ]);
+  const artistOpts = allArtists.map((a: (typeof allArtists)[number]) => ({ id: a.id, stageName: a.stageName }));
+  const projectOpts = allProjects.map((p: (typeof allProjects)[number]) => ({ id: p.id, title: p.title, artistId: p.artistId }));
 
   const returnTo = `/admin/projects/${project.id}`;
 
@@ -96,7 +104,7 @@ export default async function ProjectDetailPage({
           <h2 style={{ fontSize: 18 }}>
             Titres <span className="muted" style={{ fontWeight: 400 }}>({project.tracks.length})</span>
           </h2>
-          <TrackUploader projectId={project.id} />
+          <SongUploader projectId={project.id} />
         </div>
 
         {project.tracks.length === 0 ? (
@@ -140,6 +148,20 @@ export default async function ProjectDetailPage({
                   </div>
                   <div className="row" style={{ justifyContent: "flex-end", gap: 8 }}>
                     <ShareButton targetType="TRACK" targetId={t.id} returnTo={returnTo} small />
+                    <TrackEditForm
+                      track={{
+                        id: t.id,
+                        title: t.title,
+                        artistId: t.artistId,
+                        projectId: t.projectId,
+                        genre: t.genre,
+                        bpm: t.bpm,
+                        songKey: t.songKey,
+                        isrc: t.isrc,
+                      }}
+                      artists={artistOpts}
+                      projects={projectOpts}
+                    />
                     <form action={deleteTrack}>
                       <input type="hidden" name="id" value={t.id} />
                       <button className="btn btn-sm" type="submit" style={{ color: "var(--xol-carmin)" }}>
