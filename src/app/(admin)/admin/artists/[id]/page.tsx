@@ -128,24 +128,15 @@ export default async function ArtistDetailPage({
         {artist.demos.length > 0 && (
           <div className="stack" style={{ gap: 10, marginTop: 16 }}>
             {artist.demos.map((d: (typeof artist.demos)[number]) => {
-              const streamUrl = d.streamKey
-                ? `/api/admin-stream/demo/${d.id}`
-                : "";
+              const streamUrl = `/api/admin-stream/demo/${d.id}`;
               return (
                 <div key={d.id} className="card" style={{ padding: 14 }}>
                   <div style={{ marginBottom: 10 }}>
-                    {streamUrl ? (
-                      <AudioPlayer
-                        src={streamUrl}
-                        title={d.title}
-                        subtitle={`Demo · ${fmtDuration(d.durationSec)}`}
-                        waveform={d.waveformJson ? JSON.parse(d.waveformJson) : null}
-                      />
-                    ) : (
-                      <div className="muted" style={{ fontSize: 14 }}>
-                        {d.title} — conversion en cours…
-                      </div>
-                    )}
+                    <AudioPlayer
+                      src={streamUrl}
+                      title={d.title}
+                      subtitle={`Demo · ${fmtDuration(d.durationSec)}`}
+                    />
                   </div>
                   <div className="row" style={{ justifyContent: "flex-end", gap: 8 }}>
                     <ShareButton

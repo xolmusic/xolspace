@@ -99,8 +99,7 @@ export async function deleteProject(formData: FormData) {
   });
   if (project?.coverKey) await deleteObject(project.coverKey);
   for (const t of project?.tracks ?? []) {
-    await deleteObject(keys.trackMaster(t.id));
-    await deleteObject(keys.trackStream(t.id));
+    await deleteObject(keys.trackAudio(t.id));
   }
   await prisma.project.delete({ where: { id } });
   revalidatePath("/admin/projects");

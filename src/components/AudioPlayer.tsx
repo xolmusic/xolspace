@@ -3,11 +3,9 @@
 import { useEffect, useRef, useState } from "react";
 
 type Props = {
-  src: string; // URL de streaming (MP3 320 servi par notre API)
+  src: string;
   title: string;
   subtitle?: string;
-  waveform?: number[] | null;
-  downloadUrl?: string | null; // present uniquement si le partage l'autorise
   onPlay?: () => void;
 };
 
@@ -18,14 +16,7 @@ function fmt(sec: number) {
   return `${m}:${s.toString().padStart(2, "0")}`;
 }
 
-export default function AudioPlayer({
-  src,
-  title,
-  subtitle,
-  waveform,
-  downloadUrl,
-  onPlay,
-}: Props) {
+export default function AudioPlayer({ src, title, subtitle, onPlay }: Props) {
   const audioRef = useRef<HTMLAudioElement>(null);
   const [playing, setPlaying] = useState(false);
   const [cur, setCur] = useState(0);
@@ -73,7 +64,6 @@ export default function AudioPlayer({
   }
 
   const progress = dur ? cur / dur : 0;
-  const bars = waveform && waveform.length ? waveform : null;
 
   return (
     <div
@@ -143,68 +133,25 @@ export default function AudioPlayer({
         <div
           onClick={seek}
           style={{
-            marginTop: 6,
-            height: 34,
+            marginTop: 8,
+            height: 6,
             cursor: "pointer",
-            display: "flex",
-            alignItems: "center",
-            gap: 2,
+            borderRadius: 3,
+            background: "var(--border-strong)",
             position: "relative",
           }}
         >
-          {bars ? (
-            bars.map((v, i) => {
-              const active = i / bars.length <= progress;
-              return (
-                <span
-                  key={i}
-                  style={{
-                    flex: 1,
-                    height: `${Math.max(8, v * 100)}%`,
-                    borderRadius: 1,
-                    background: active
-                      ? "var(--xol-indigo)"
-                      : "var(--border-strong)",
-                  }}
-                />
-              );
-            })
-          ) : (
-            <div
-              style={{
-                width: "100%",
-                height: 4,
-                borderRadius: 2,
-                background: "var(--border-strong)",
-                position: "relative",
-              }}
-            >
-              <div
-                style={{
-                  position: "absolute",
-                  inset: 0,
-                  width: `${progress * 100}%`,
-                  background: "var(--xol-indigo)",
-                  borderRadius: 2,
-                }}
-              />
-            </div>
-          )}
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              width: `${progress * 100}%`,
+              background: "var(--xol-indigo)",
+              borderRadius: 3,
+            }}
+          />
         </div>
       </div>
-
-      {downloadUrl && (
-        <a
-          href={downloadUrl}
-          className="btn btn-sm"
-          style={{ flexShrink: 0 }}
-          aria-label="Télécharger"
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M12 3v12M7 10l5 5 5-5M5 21h14" />
-          </svg>
-        </a>
-      )}
     </div>
   );
 }

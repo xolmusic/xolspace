@@ -1,40 +1,30 @@
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { getObjectStream } from "@/lib/storage";
+import { signedGetUrl } from "@/lib/storage";
 
-// Streaming de la version MP3 pour la previsualisation dans le back-office.
-// Reservee aux admins. Ne sert jamais le WAV master.
+// Previsualisation audio dans le back-office. Reserve aux admins.
+// Redirige vers une URL signee R2 (lecture directe depuis R2).
 export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ kind: string; id: string }> }
 ) {
   const session = await getSession();
-  if (!session) return new Response("Unauthorized", { status: 401 });
+  if (!session) return new NextResponse("Unauthorized", { status: 401 });
 
   const { kind, id } = await params;
-  let streamKey: string | null = null;
+  let audioKey: string | null = null;
 
   if (kind === "track") {
     const t = await prisma.track.findUnique({ where: { id } });
-    streamKey = t?.streamKey ?? null;
+    audioKey = t?.audioKey ?? null;
   } else if (kind === "demo") {
     const d = await prisma.demo.findUnique({ where: { id } });
-    streamKey = d?.streamKey ?? null;
+    audioKey = d?.audioKey ?? null;
   }
 
-  if (!streamKey) return new Response("Not found", { status: 404 });
+  if (!audioKey) return new NextResponse("Not found", { status: 404 });
 
-  try {
-    const { body, contentLength } = await getObjectStream(streamKey);
-    return new Response(body as unknown as ReadableStream, {
-      headers: {
-        "Content-Type": "audio/mpeg",
-        "Cache-Control": "private, max-age=3600",
-        ...(contentLength ? { "Content-Length": String(contentLength) } : {}),
-      },
-    });
-  } catch {
-    return new Response("Not found", { status: 404 });
-  }
+  const url = await signedGetUrl(audioKey, 3600);
+  return NextResponse.redirect(url, 302);
 }

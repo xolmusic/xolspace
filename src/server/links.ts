@@ -12,14 +12,12 @@ async function requireAdmin() {
   if (!s) redirect("/login");
 }
 
-// Cree un lien de partage pour n'importe quelle cible.
-// allowDownload est false par defaut (regle d'or).
+// Cree un lien de partage (ecoute seule) pour n'importe quelle cible.
 export async function createShareLink(_prev: unknown, formData: FormData) {
   await requireAdmin();
   const targetType = String(formData.get("targetType")) as ShareTargetType;
   const targetId = String(formData.get("targetId"));
   const label = String(formData.get("label") ?? "").trim() || null;
-  const allowDownload = formData.get("allowDownload") === "on";
   const password = String(formData.get("password") ?? "").trim();
 
   const expiresRaw = String(formData.get("expiresAt") ?? "").trim();
@@ -29,7 +27,6 @@ export async function createShareLink(_prev: unknown, formData: FormData) {
     token: newShareToken(),
     targetType,
     label,
-    allowDownload,
     expiresAt: expiresAt && !isNaN(expiresAt.getTime()) ? expiresAt : null,
     passwordHash: password ? await hash(password) : null,
   };
@@ -45,19 +42,6 @@ export async function createShareLink(_prev: unknown, formData: FormData) {
   const back = String(formData.get("returnTo") ?? "/admin/links");
   revalidatePath(back);
   return { ok: true };
-}
-
-export async function toggleDownload(formData: FormData) {
-  await requireAdmin();
-  const id = String(formData.get("id"));
-  const link = await prisma.shareLink.findUnique({ where: { id } });
-  if (link) {
-    await prisma.shareLink.update({
-      where: { id },
-      data: { allowDownload: !link.allowDownload },
-    });
-    revalidatePath("/admin/links");
-  }
 }
 
 export async function revokeLink(formData: FormData) {

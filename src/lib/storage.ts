@@ -7,8 +7,7 @@ import {
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { Readable } from "node:stream";
 
-// Cloudflare R2 est compatible avec l'API S3 : zero frais de sortie,
-// ce qui est decisif pour de l'audio ecoute en streaming.
+// Cloudflare R2, compatible S3 : zero frais de sortie.
 const s3 = new S3Client({
   region: "auto",
   endpoint: process.env.R2_ENDPOINT,
@@ -37,9 +36,7 @@ export async function putObject(
 }
 
 export async function getObjectStream(key: string) {
-  const res = await s3.send(
-    new GetObjectCommand({ Bucket: BUCKET, Key: key })
-  );
+  const res = await s3.send(new GetObjectCommand({ Bucket: BUCKET, Key: key }));
   return {
     body: res.Body as Readable,
     contentType: res.ContentType,
@@ -47,22 +44,28 @@ export async function getObjectStream(key: string) {
   };
 }
 
-export async function getObjectBuffer(key: string): Promise<Buffer> {
-  const res = await s3.send(new GetObjectCommand({ Bucket: BUCKET, Key: key }));
-  const stream = res.Body as Readable;
-  const chunks: Buffer[] = [];
-  for await (const chunk of stream) chunks.push(chunk as Buffer);
-  return Buffer.concat(chunks);
-}
-
 export async function deleteObject(key: string) {
   if (!key) return;
   await s3.send(new DeleteObjectCommand({ Bucket: BUCKET, Key: key }));
 }
 
-// URL signee courte duree — utilisee UNIQUEMENT en interne (admin) pour
-// previsualiser un master. Jamais renvoyee a une page publique.
-export async function signedGetUrl(key: string, expiresInSec = 300) {
+// URL signee pour ECRIRE (upload direct navigateur -> R2). Le fichier ne
+// transite jamais par Vercel : c'est ce qui contourne la limite des 4,5 Mo.
+export async function signedPutUrl(
+  key: string,
+  contentType: string,
+  expiresInSec = 600
+) {
+  return getSignedUrl(
+    s3,
+    new PutObjectCommand({ Bucket: BUCKET, Key: key, ContentType: contentType }),
+    { expiresIn: expiresInSec }
+  );
+}
+
+// URL signee pour LIRE (lecture audio, images). Courte duree, non
+// repartageable durablement. Le navigateur lit directement depuis R2.
+export async function signedGetUrl(key: string, expiresInSec = 3600) {
   return getSignedUrl(
     s3,
     new GetObjectCommand({ Bucket: BUCKET, Key: key }),
@@ -70,14 +73,11 @@ export async function signedGetUrl(key: string, expiresInSec = 300) {
   );
 }
 
-// Conventions de nommage des cles R2
 export const keys = {
   artistPhoto: (artistId: string, ext: string) =>
     `artists/${artistId}/photo.${ext}`,
   projectCover: (projectId: string, ext: string) =>
     `projects/${projectId}/cover.${ext}`,
-  trackMaster: (trackId: string) => `masters/tracks/${trackId}.wav`,
-  trackStream: (trackId: string) => `streams/tracks/${trackId}.mp3`,
-  demoMaster: (demoId: string) => `masters/demos/${demoId}.wav`,
-  demoStream: (demoId: string) => `streams/demos/${demoId}.mp3`,
+  trackAudio: (trackId: string) => `audio/tracks/${trackId}.mp3`,
+  demoAudio: (demoId: string) => `audio/demos/${demoId}.mp3`,
 };

@@ -1,6 +1,7 @@
-// Schema XOL Catalog — coffre-fort commercial du label
-// PostgreSQL (Neon). Le WAV master n'est jamais exposé publiquement :
-// seule la version streaming (MP3 320) est servie au public via lien signe.
+// Schema XOL Catalog — catalogue d'ecoute du label
+// PostgreSQL (Neon). Modele simplifie : un seul fichier audio (MP3) par
+// titre ou demo, uploade directement dans R2 depuis le navigateur.
+// Ecoute uniquement — pas de telechargement.
 
 generator client {
   provider = "prisma-client-js"
@@ -11,7 +12,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// --- Comptes admin (toi, ton equipe A&R plus tard) ---
 model Admin {
   id           String   @id @default(cuid())
   email        String   @unique
@@ -20,12 +20,11 @@ model Admin {
   createdAt    DateTime @default(now())
 }
 
-// --- Artistes du label ---
 model Artist {
   id           String    @id @default(cuid())
-  stageName    String                      // nom d'artiste
-  photoKey     String?                     // cle R2 de la photo de profil
-  country      String?                     // pays de residence
+  stageName    String
+  photoKey     String?
+  country      String?
   bio          String?
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
@@ -45,22 +44,21 @@ enum ProjectType {
 }
 
 enum ReleaseStatus {
-  UNRELEASED   // non sorti
-  SCHEDULED    // date calee
-  RELEASED     // sorti
+  UNRELEASED
+  SCHEDULED
+  RELEASED
 }
 
-// --- Projets (single / EP / album) ---
 model Project {
   id           String        @id @default(cuid())
   title        String
   type         ProjectType   @default(SINGLE)
   status       ReleaseStatus @default(UNRELEASED)
-  coverKey     String?                     // cle R2 de la cover 1080x1080
+  coverKey     String?
   releaseDate  DateTime?
   genre        String?
-  upc          String?                     // code barre release (metadonnee label)
-  catalogRef   String?                     // reference catalogue interne (ex: XOL-024)
+  upc          String?
+  catalogRef   String?
   notes        String?
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
@@ -74,18 +72,15 @@ model Project {
   @@index([artistId])
 }
 
-// --- Chansons finalisees, rattachees a un projet ---
 model Track {
   id             String    @id @default(cuid())
   title          String
-  position       Int       @default(1)     // numero de piste dans le projet
-  isrc           String?                   // metadonnee label
+  position       Int       @default(1)
+  isrc           String?
   bpm            Int?
-  songKey        String?                   // tonalite
+  songKey        String?
   durationSec    Int?
-  masterKey      String                    // cle R2 du WAV master (jamais public)
-  streamKey      String?                   // cle R2 du MP3 320 (servi au public)
-  waveformJson   String?                   // pics de waveform pre-calcules
+  audioKey       String                    // cle R2 du MP3 (ecoute)
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
 
@@ -100,14 +95,11 @@ model Track {
   @@index([artistId])
 }
 
-// --- Demos : fichiers bruts dans le dossier d'un artiste, hors projet ---
 model Demo {
   id             String    @id @default(cuid())
   title          String
-  masterKey      String                    // cle R2 du WAV brut
-  streamKey      String?                   // cle R2 du MP3 320
+  audioKey       String                    // cle R2 du MP3
   durationSec    Int?
-  waveformJson   String?
   notes          String?
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
@@ -127,24 +119,21 @@ enum ShareTargetType {
   ARTIST
 }
 
-// --- Liens de partage publics : un lien = un objet controle ---
-// Revocable, expiration optionnelle, mot de passe optionnel,
-// telechargement activable individuellement.
+// Liens de partage publics : ecoute seule, revocable, expiration et
+// mot de passe optionnels. Plus de telechargement.
 model ShareLink {
   id             String          @id @default(cuid())
-  token          String          @unique   // identifiant public dans l'URL /s/<token>
+  token          String          @unique
   targetType     ShareTargetType
-  label          String?                   // ex: "Envoi presse", "Distributeur"
+  label          String?
 
-  allowDownload  Boolean         @default(false)  // REGLE D'OR : false par defaut
-  passwordHash   String?                   // protection optionnelle par mot de passe
-  expiresAt      DateTime?                 // expiration optionnelle
-  revoked        Boolean         @default(false)  // coupe l'acces immediatement
+  passwordHash   String?
+  expiresAt      DateTime?
+  revoked        Boolean         @default(false)
 
   viewCount      Int             @default(0)
   createdAt      DateTime        @default(now())
 
-  // cibles possibles (une seule renseignee selon targetType)
   project        Project?        @relation(fields: [projectId], references: [id], onDelete: Cascade)
   projectId      String?
   track          Track?          @relation(fields: [trackId], references: [id], onDelete: Cascade)
@@ -159,13 +148,12 @@ model ShareLink {
   @@index([token])
 }
 
-// --- Analytics d'ecoute par lien (base pour la V1.5) ---
 model PlayEvent {
   id           String    @id @default(cuid())
   shareLink    ShareLink @relation(fields: [shareLinkId], references: [id], onDelete: Cascade)
   shareLinkId  String
-  trackId      String?                     // quelle piste a ete jouee
-  kind         String    @default("play")  // play | complete | download
+  trackId      String?
+  kind         String    @default("play")
   country      String?
   createdAt    DateTime  @default(now())
 

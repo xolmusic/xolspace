@@ -37,22 +37,15 @@ export default async function DemosPage() {
             </div>
             <div className="stack" style={{ gap: 10 }}>
               {a.demos.map((d: (typeof a.demos)[number]) => {
-                const streamUrl = d.streamKey ? `/api/admin-stream/demo/${d.id}` : "";
+                const streamUrl = `/api/admin-stream/demo/${d.id}`;
                 return (
                   <div key={d.id} className="card" style={{ padding: 14 }}>
                     <div style={{ marginBottom: 10 }}>
-                      {streamUrl ? (
-                        <AudioPlayer
-                          src={streamUrl}
-                          title={d.title}
-                          subtitle={`Demo · ${fmtDuration(d.durationSec)} · ${fmtDate(d.createdAt)}`}
-                          waveform={d.waveformJson ? JSON.parse(d.waveformJson) : null}
-                        />
-                      ) : (
-                        <div className="muted" style={{ fontSize: 14 }}>
-                          {d.title} — conversion en cours…
-                        </div>
-                      )}
+                      <AudioPlayer
+                        src={streamUrl}
+                        title={d.title}
+                        subtitle={`Demo · ${fmtDuration(d.durationSec)} · ${fmtDate(d.createdAt)}`}
+                      />
                     </div>
                     <div className="row" style={{ justifyContent: "flex-end", gap: 8 }}>
                       <ShareButton targetType="DEMO" targetId={d.id} returnTo="/admin/demos" small />

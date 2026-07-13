@@ -80,12 +80,10 @@ export async function deleteArtist(formData: FormData) {
   // Les masters/streams des tracks et demos sont nettoyes par leurs cascades DB ;
   // pour R2 on supprime les objets connus.
   for (const t of artist?.tracks ?? []) {
-    await deleteObject(keys.trackMaster(t.id));
-    await deleteObject(keys.trackStream(t.id));
+    await deleteObject(keys.trackAudio(t.id));
   }
   for (const d of artist?.demos ?? []) {
-    await deleteObject(keys.demoMaster(d.id));
-    await deleteObject(keys.demoStream(d.id));
+    await deleteObject(keys.demoAudio(d.id));
   }
   await prisma.artist.delete({ where: { id } });
   revalidatePath("/admin/artists");

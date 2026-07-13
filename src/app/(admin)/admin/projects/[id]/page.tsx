@@ -108,7 +108,7 @@ export default async function ProjectDetailPage({
         ) : (
           <div className="stack" style={{ gap: 10 }}>
             {project.tracks.map((t: (typeof project.tracks)[number]) => {
-              const streamUrl = t.streamKey ? `/api/admin-stream/track/${t.id}` : "";
+              const streamUrl = `/api/admin-stream/track/${t.id}`;
               return (
                 <div key={t.id} className="card" style={{ padding: 14 }}>
                   <div className="row" style={{ gap: 10, marginBottom: 10 }}>
@@ -124,25 +124,18 @@ export default async function ProjectDetailPage({
                       {t.position}
                     </span>
                     <div style={{ flex: 1 }}>
-                      {streamUrl ? (
-                        <AudioPlayer
-                          src={streamUrl}
-                          title={t.title}
-                          subtitle={[
-                            fmtDuration(t.durationSec),
-                            t.bpm ? `${t.bpm} BPM` : null,
-                            t.songKey,
-                            t.isrc,
-                          ]
-                            .filter(Boolean)
-                            .join(" · ")}
-                          waveform={t.waveformJson ? JSON.parse(t.waveformJson) : null}
-                        />
-                      ) : (
-                        <div className="muted" style={{ fontSize: 14 }}>
-                          {t.title} — conversion en cours…
-                        </div>
-                      )}
+                      <AudioPlayer
+                        src={streamUrl}
+                        title={t.title}
+                        subtitle={[
+                          fmtDuration(t.durationSec),
+                          t.bpm ? `${t.bpm} BPM` : null,
+                          t.songKey,
+                          t.isrc,
+                        ]
+                          .filter(Boolean)
+                          .join(" · ")}
+                      />
                     </div>
                   </div>
                   <div className="row" style={{ justifyContent: "flex-end", gap: 8 }}>

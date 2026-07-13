@@ -3,6 +3,7 @@
 import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { addTrack } from "@/server/tracks";
+import { uploadDirect } from "@/lib/upload-client";
 
 export default function TrackUploader({ projectId }: { projectId: string }) {
   const [busy, setBusy] = useState<string | null>(null);
@@ -14,20 +15,26 @@ export default function TrackUploader({ projectId }: { projectId: string }) {
   async function handleFiles(files: FileList | File[]) {
     setError(null);
     const list = Array.from(files).filter(
-      (f) => /\.wav$/i.test(f.name) || f.type.includes("wav")
+      (f) => /\.mp3$/i.test(f.name) || f.type === "audio/mpeg"
     );
     if (list.length === 0) {
-      setError("Seuls les fichiers WAV sont acceptés.");
+      setError("Seuls les fichiers MP3 sont acceptés.");
       return;
     }
     for (const file of list) {
       setBusy(file.name);
-      const fd = new FormData();
-      fd.set("projectId", projectId);
-      fd.set("title", file.name.replace(/\.[^.]+$/, ""));
-      fd.set("file", file);
-      const res = await addTrack(null, fd);
-      if (res && "error" in res && res.error) setError(res.error);
+      try {
+        const { audioId, durationSec } = await uploadDirect("track", file);
+        const fd = new FormData();
+        fd.set("projectId", projectId);
+        fd.set("title", file.name.replace(/\.[^.]+$/, ""));
+        fd.set("audioId", audioId);
+        if (durationSec) fd.set("durationSec", String(durationSec));
+        const r = await addTrack(null, fd);
+        if (r && "error" in r && r.error) setError(r.error);
+      } catch (e) {
+        setError(e instanceof Error ? e.message : "Échec de l'envoi.");
+      }
     }
     setBusy(null);
     startTransition(() => router.refresh());
@@ -42,18 +49,18 @@ export default function TrackUploader({ projectId }: { projectId: string }) {
           type="button"
           disabled={!!busy}
         >
-          + Ajouter des titres (WAV)
+          + Ajouter des titres (MP3)
         </button>
         {busy && (
           <span style={{ fontSize: 13, color: "var(--text-soft)" }}>
-            Import et conversion : {busy}…
+            Envoi : {busy}…
           </span>
         )}
       </div>
       <input
         ref={inputRef}
         type="file"
-        accept=".wav,audio/wav"
+        accept=".mp3,audio/mpeg"
         multiple
         hidden
         onChange={(e) => e.target.files && handleFiles(e.target.files)}

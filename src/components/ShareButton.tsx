@@ -81,26 +81,7 @@ export default function ShareButton({ targetType, targetId, returnTo, small }: P
                   />
                 </div>
 
-                <label
-                  className="row"
-                  style={{
-                    gap: 10,
-                    padding: "10px 12px",
-                    border: "1px solid var(--border)",
-                    borderRadius: 10,
-                    marginBottom: 16,
-                    cursor: "pointer",
-                  }}
-                >
-                  <input type="checkbox" name="allowDownload" style={{ width: 18, height: 18 }} />
-                  <span>
-                    <span style={{ fontWeight: 500 }}>Autoriser le téléchargement</span>
-                    <br />
-                    <span style={{ fontSize: 13, color: "var(--text-soft)" }}>
-                      Sinon, écoute seule (par défaut)
-                    </span>
-                  </span>
-                </label>
+                
 
                 <div className="field">
                   <label htmlFor="expiresAt">Expiration (optionnel)</label>

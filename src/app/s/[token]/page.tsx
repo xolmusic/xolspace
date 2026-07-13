@@ -87,8 +87,6 @@ export default async function SharePage({
     .update({ where: { id: link.id }, data: { viewCount: { increment: 1 } } })
     .catch(() => {});
 
-  const allowDownload = link.allowDownload;
-
   // --- Rendu selon le type de cible ---
   if (link.targetType === "PROJECT" && link.project) {
     const p = link.project;
@@ -111,18 +109,13 @@ export default async function SharePage({
         </div>
         <PublicPlayer
           token={token}
-          allowDownload={allowDownload}
           password={pw}
-          items={p.tracks
-            .filter((t: (typeof p.tracks)[number]) => t.streamKey)
-            .map((t: (typeof p.tracks)[number]) => ({
-              id: t.id,
-              title: `${t.position}. ${t.title}`,
-              subtitle: fmtDuration(t.durationSec),
-              waveform: t.waveformJson ? JSON.parse(t.waveformJson) : null,
-            }))}
+          items={p.tracks.map((t: (typeof p.tracks)[number]) => ({
+            id: t.id,
+            title: `${t.position}. ${t.title}`,
+            subtitle: fmtDuration(t.durationSec),
+          }))}
         />
-        <DownloadNote allow={allowDownload} />
       </Shell>
     );
   }
@@ -146,18 +139,15 @@ export default async function SharePage({
         </div>
         <PublicPlayer
           token={token}
-          allowDownload={allowDownload}
           password={pw}
           items={[
             {
               id: t.id,
               title: t.title,
               subtitle: fmtDuration(t.durationSec),
-              waveform: t.waveformJson ? JSON.parse(t.waveformJson) : null,
             },
           ]}
         />
-        <DownloadNote allow={allowDownload} />
       </Shell>
     );
   }
@@ -173,25 +163,22 @@ export default async function SharePage({
         </div>
         <PublicPlayer
           token={token}
-          allowDownload={allowDownload}
           password={pw}
           items={[
             {
               id: d.id,
               title: d.title,
               subtitle: fmtDuration(d.durationSec),
-              waveform: d.waveformJson ? JSON.parse(d.waveformJson) : null,
             },
           ]}
         />
-        <DownloadNote allow={allowDownload} />
       </Shell>
     );
   }
 
   if (link.targetType === "ARTIST" && link.artist) {
     const a = link.artist;
-    const demos = a.demos.filter((d: (typeof a.demos)[number]) => d.streamKey);
+    const demos = a.demos;
     return (
       <Shell>
         <div style={{ marginBottom: 28 }}>
@@ -202,16 +189,13 @@ export default async function SharePage({
         <h2 style={{ fontSize: 17, marginBottom: 12 }}>Demos</h2>
         <PublicPlayer
           token={token}
-          allowDownload={allowDownload}
           password={pw}
           items={demos.map((d: (typeof demos)[number]) => ({
             id: d.id,
             title: d.title,
             subtitle: fmtDuration(d.durationSec),
-            waveform: d.waveformJson ? JSON.parse(d.waveformJson) : null,
           }))}
         />
-        <DownloadNote allow={allowDownload} />
       </Shell>
     );
   }
@@ -222,15 +206,5 @@ export default async function SharePage({
         <p className="muted">Contenu indisponible.</p>
       </Centered>
     </Shell>
-  );
-}
-
-function DownloadNote({ allow }: { allow: boolean }) {
-  return (
-    <p style={{ fontSize: 13, color: "var(--text-mute)", marginTop: 24, textAlign: "center" }}>
-      {allow
-        ? "Le téléchargement du fichier original est autorisé pour ce lien."
-        : "Écoute seule. Le téléchargement n'est pas activé pour ce lien."}
-    </p>
   );
 }

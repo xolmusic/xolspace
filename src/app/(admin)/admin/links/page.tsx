@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { fmtDate, appUrl } from "@/lib/display";
 import CopyLink from "@/components/CopyLink";
-import { toggleDownload, revokeLink, restoreLink, deleteLink } from "@/server/links";
+import { revokeLink, restoreLink, deleteLink } from "@/server/links";
 
 const targetLabel: Record<string, string> = {
   PROJECT: "Projet",
@@ -66,7 +66,6 @@ export default async function LinksPage() {
                     <div className="row" style={{ gap: 8, marginBottom: 4 }}>
                       <span className="badge">{targetLabel[l.targetType]}</span>
                       <span className={`badge ${state.cls}`}>{state.text}</span>
-                      {l.allowDownload && <span className="badge badge-yellow">Téléchargement OK</span>}
                       {l.passwordHash && <span className="badge">Protégé</span>}
                     </div>
                     <div style={{ fontWeight: 500 }}>
@@ -95,12 +94,6 @@ export default async function LinksPage() {
 
                 <div className="row" style={{ gap: 8, marginTop: 12, flexWrap: "wrap" }}>
                   <CopyLink url={url} />
-                  <form action={toggleDownload}>
-                    <input type="hidden" name="id" value={l.id} />
-                    <button className="btn btn-sm" type="submit">
-                      {l.allowDownload ? "Bloquer le téléchargement" : "Autoriser le téléchargement"}
-                    </button>
-                  </form>
                   {l.revoked ? (
                     <form action={restoreLink}>
                       <input type="hidden" name="id" value={l.id} />

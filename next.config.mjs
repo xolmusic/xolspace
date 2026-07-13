@@ -1,18 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Ces paquets ne doivent pas etre bundles par Next : ils tournent cote Node.
-  serverExternalPackages: ["fluent-ffmpeg", "ffmpeg-static", "music-metadata"],
-
-  // On force l'inclusion du binaire ffmpeg-static dans le deploiement
-  // serverless (sinon Vercel ne le trace pas et le transcodage echoue).
-  outputFileTracingIncludes: {
-    "/api/**": ["./node_modules/ffmpeg-static/**"],
-    "/**": ["./node_modules/ffmpeg-static/**"],
-  },
-
-  experimental: {
-    serverActions: { bodySizeLimit: "150mb" },
-  },
+  // Plus de transcodage : on garde juste le SDK S3 hors bundle.
+  serverExternalPackages: ["@aws-sdk/client-s3", "@aws-sdk/s3-request-presigner"],
 };
 
 export default nextConfig;

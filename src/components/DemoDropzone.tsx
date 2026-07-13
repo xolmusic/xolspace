@@ -3,6 +3,7 @@
 import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { addDemo } from "@/server/tracks";
+import { uploadDirect } from "@/lib/upload-client";
 
 export default function DemoDropzone({ artistId }: { artistId: string }) {
   const [dragging, setDragging] = useState(false);
@@ -14,22 +15,29 @@ export default function DemoDropzone({ artistId }: { artistId: string }) {
 
   async function upload(files: FileList | File[]) {
     setError(null);
-    const list = Array.from(files).filter((f) =>
-      /\.wav$/i.test(f.name) || f.type === "audio/wav" || f.type === "audio/x-wav"
+    const list = Array.from(files).filter(
+      (f) => /\.mp3$/i.test(f.name) || f.type === "audio/mpeg"
     );
     if (list.length === 0) {
-      setError("Seuls les fichiers WAV sont acceptés.");
+      setError("Seuls les fichiers MP3 sont acceptés.");
       return;
     }
 
     for (const file of list) {
       setQueue((q) => [...q, file.name]);
-      const fd = new FormData();
-      fd.set("artistId", artistId);
-      fd.set("file", file);
-      const res = await addDemo(null, fd);
+      try {
+        const { audioId, durationSec } = await uploadDirect("demo", file);
+        const fd = new FormData();
+        fd.set("artistId", artistId);
+        fd.set("title", file.name.replace(/\.[^.]+$/, ""));
+        fd.set("audioId", audioId);
+        if (durationSec) fd.set("durationSec", String(durationSec));
+        const r = await addDemo(null, fd);
+        if (r && "error" in r && r.error) setError(r.error);
+      } catch (e) {
+        setError(e instanceof Error ? e.message : "Échec de l'envoi.");
+      }
       setQueue((q) => q.filter((n) => n !== file.name));
-      if (res && "error" in res && res.error) setError(res.error);
     }
     startTransition(() => router.refresh());
   }
@@ -65,12 +73,12 @@ export default function DemoDropzone({ artistId }: { artistId: string }) {
           Glisse des demos ici, ou clique pour choisir
         </div>
         <div style={{ fontSize: 13, color: "var(--text-soft)", marginTop: 2 }}>
-          Fichiers WAV · rattachés à aucun projet
+          Fichiers MP3 · rattachés à aucun projet
         </div>
         <input
           ref={inputRef}
           type="file"
-          accept=".wav,audio/wav"
+          accept=".mp3,audio/mpeg"
           multiple
           hidden
           onChange={(e) => e.target.files && upload(e.target.files)}
@@ -81,7 +89,7 @@ export default function DemoDropzone({ artistId }: { artistId: string }) {
         <div style={{ marginTop: 12, fontSize: 13, color: "var(--text-soft)" }}>
           {queue.map((n) => (
             <div key={n} className="row" style={{ gap: 8, marginTop: 4 }}>
-              <Spinner /> {n} — import et conversion en cours…
+              <Spinner /> {n} — envoi en cours…
             </div>
           ))}
           {pending && queue.length === 0 && <div>Actualisation…</div>}
