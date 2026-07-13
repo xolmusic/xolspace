@@ -3,12 +3,15 @@
 import { useActionState, useState } from "react";
 import { useRouter } from "next/navigation";
 import { updateArtist, deleteArtist } from "@/server/artists";
+import CountrySelect from "@/components/CountrySelect";
 
 type Artist = {
   id: string;
   stageName: string;
   country: string | null;
   bio: string | null;
+  relationType: string;
+  mandateNotes: string | null;
 };
 
 export default function ArtistEditForm({ artist }: { artist: Artist }) {
@@ -53,8 +56,15 @@ export default function ArtistEditForm({ artist }: { artist: Artist }) {
                 <input id="stageName" name="stageName" className="input" defaultValue={artist.stageName} required />
               </div>
               <div className="field">
+                <label htmlFor="relationType">Type de relation *</label>
+                <select id="relationType" name="relationType" className="select" defaultValue={artist.relationType}>
+                  <option value="LABEL">Label (artiste signé)</option>
+                  <option value="EXTERNAL">Externe (mandat de réalisation)</option>
+                </select>
+              </div>
+              <div className="field">
                 <label htmlFor="country">Pays de résidence</label>
-                <input id="country" name="country" className="input" defaultValue={artist.country ?? ""} />
+                <CountrySelect id="country" defaultValue={artist.country} />
               </div>
               <div className="field">
                 <label htmlFor="photo">Changer la photo</label>
@@ -63,6 +73,10 @@ export default function ArtistEditForm({ artist }: { artist: Artist }) {
               <div className="field">
                 <label htmlFor="bio">Bio</label>
                 <textarea id="bio" name="bio" className="textarea" defaultValue={artist.bio ?? ""} />
+              </div>
+              <div className="field">
+                <label htmlFor="mandateNotes">Cadre du mandat (artistes externes)</label>
+                <textarea id="mandateNotes" name="mandateNotes" className="textarea" defaultValue={artist.mandateNotes ?? ""} placeholder="Nature de la prestation, périmètre, échéances…" />
               </div>
 
               {state?.error && (

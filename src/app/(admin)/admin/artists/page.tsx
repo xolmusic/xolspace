@@ -1,9 +1,19 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import ArtistCreateForm from "./ArtistCreateForm";
+import { relationTypeLabel, relationTypeBadge } from "@/lib/display";
 
-export default async function ArtistsPage() {
+export default async function ArtistsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ relation?: string }>;
+}) {
+  const { relation } = await searchParams;
+  const where =
+    relation === "LABEL" || relation === "EXTERNAL" ? { relationType: relation } : {};
+
   const artists = await prisma.artist.findMany({
+    where: where as never,
     orderBy: { stageName: "asc" },
     include: { _count: { select: { projects: true, tracks: true } } },
   });
@@ -18,6 +28,12 @@ export default async function ArtistsPage() {
         <ArtistCreateForm />
       </div>
 
+      <div className="row" style={{ gap: 6 }}>
+        <FilterTab label="Tous" href="/admin/artists" active={!relation} />
+        <FilterTab label="Label" href="/admin/artists?relation=LABEL" active={relation === "LABEL"} />
+        <FilterTab label="Externes" href="/admin/artists?relation=EXTERNAL" active={relation === "EXTERNAL"} />
+      </div>
+
       {artists.length === 0 ? (
         <div className="card">
           <p className="muted">Aucun artiste. Ajoute le premier avec le bouton ci-dessus.</p>
@@ -29,6 +45,7 @@ export default async function ArtistsPage() {
               <tr>
                 <th style={{ width: 40 }}></th>
                 <th>Nom d&apos;artiste</th>
+                <th>Relation</th>
                 <th>Pays</th>
                 <th style={{ textAlign: "right" }}>Projets</th>
                 <th style={{ textAlign: "right" }}>Titres</th>
@@ -91,5 +108,13 @@ function Avatar({ photoKey, name }: { photoKey: string | null; name: string }) {
     >
       {name.slice(0, 2).toUpperCase()}
     </div>
+  );
+}
+
+function FilterTab({ label, href, active }: { label: string; href: string; active: boolean }) {
+  return (
+    <a href={href} className={`btn btn-xs ${active ? "btn-primary" : ""}`}>
+      {label}
+    </a>
   );
 }

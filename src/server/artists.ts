@@ -19,9 +19,17 @@ export async function createArtist(_prev: unknown, formData: FormData) {
 
   const country = String(formData.get("country") ?? "").trim() || null;
   const bio = String(formData.get("bio") ?? "").trim() || null;
+  const relationType = String(formData.get("relationType") ?? "LABEL").trim();
+  const mandateNotes = String(formData.get("mandateNotes") ?? "").trim() || null;
 
   const artist = await prisma.artist.create({
-    data: { stageName, country, bio },
+    data: {
+      stageName,
+      country,
+      bio,
+      relationType: (relationType === "EXTERNAL" ? "EXTERNAL" : "LABEL") as never,
+      mandateNotes,
+    },
   });
 
   const photo = formData.get("photo") as File | null;
@@ -46,10 +54,13 @@ export async function updateArtist(_prev: unknown, formData: FormData) {
   const stageName = String(formData.get("stageName") ?? "").trim();
   if (!stageName) return { error: "Le nom d'artiste est obligatoire." };
 
+  const relationType = String(formData.get("relationType") ?? "LABEL").trim();
   const data: Record<string, unknown> = {
     stageName,
     country: String(formData.get("country") ?? "").trim() || null,
     bio: String(formData.get("bio") ?? "").trim() || null,
+    relationType: relationType === "EXTERNAL" ? "EXTERNAL" : "LABEL",
+    mandateNotes: String(formData.get("mandateNotes") ?? "").trim() || null,
   };
 
   const photo = formData.get("photo") as File | null;

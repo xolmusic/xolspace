@@ -3,6 +3,7 @@
 import { useActionState, useState } from "react";
 import { createContact } from "@/server/crm";
 import { contactTypeLabel, CONTACT_TYPES } from "@/lib/display";
+import CountrySelect from "@/components/CountrySelect";
 
 export default function ContactCreateForm() {
   const [open, setOpen] = useState(false);
@@ -51,7 +52,7 @@ export default function ContactCreateForm() {
                 </div>
                 <div className="field">
                   <label htmlFor="country">Pays</label>
-                  <input id="country" name="country" className="input" />
+                  <CountrySelect id="country" />
                 </div>
                 <div className="field">
                   <label htmlFor="socials">Réseaux / site</label>

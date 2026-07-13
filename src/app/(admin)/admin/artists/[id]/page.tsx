@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import Cover from "@/components/Cover";
-import { projectTypeLabel, fmtDuration } from "@/lib/display";
+import { projectTypeLabel, fmtDuration, relationTypeLabel, relationTypeBadge } from "@/lib/display";
 import SongUploader from "@/components/SongUploader";
 import AudioPlayer from "@/components/AudioPlayer";
 import ShareButton from "@/components/ShareButton";
@@ -77,9 +77,31 @@ export default async function ArtistDetailPage({
           </div>
         )}
         <div style={{ flex: 1 }}>
-          <h1 style={{ fontSize: 28 }}>{artist.stageName}</h1>
+          <div className="row" style={{ gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+            <h1 style={{ fontSize: 28 }}>{artist.stageName}</h1>
+            <span className={`badge ${relationTypeBadge[artist.relationType]}`}>
+              {relationTypeLabel[artist.relationType]}
+            </span>
+          </div>
           <p className="muted">{artist.country || "Pays non renseigné"}</p>
           {artist.bio && <p style={{ marginTop: 8, maxWidth: 620 }}>{artist.bio}</p>}
+          {artist.relationType === "EXTERNAL" && artist.mandateNotes && (
+            <div
+              style={{
+                marginTop: 12,
+                padding: "10px 12px",
+                background: "#fff8f0",
+                borderLeft: "3px solid var(--xol-yellow-deep)",
+                borderRadius: 8,
+                maxWidth: 620,
+              }}
+            >
+              <div style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: "0.04em", color: "var(--text-mute)", marginBottom: 3 }}>
+                Cadre du mandat
+              </div>
+              <p style={{ fontSize: 14, whiteSpace: "pre-line" }}>{artist.mandateNotes}</p>
+            </div>
+          )}
         </div>
         <div className="row" style={{ gap: 8 }}>
           <ShareButton
@@ -93,6 +115,8 @@ export default async function ArtistDetailPage({
               stageName: artist.stageName,
               country: artist.country,
               bio: artist.bio,
+              relationType: artist.relationType,
+              mandateNotes: artist.mandateNotes,
             }}
           />
         </div>

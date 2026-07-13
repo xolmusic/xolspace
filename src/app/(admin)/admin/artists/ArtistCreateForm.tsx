@@ -2,6 +2,7 @@
 
 import { useActionState, useState } from "react";
 import { createArtist } from "@/server/artists";
+import CountrySelect from "@/components/CountrySelect";
 
 export default function ArtistCreateForm() {
   const [open, setOpen] = useState(false);
@@ -38,8 +39,15 @@ export default function ArtistCreateForm() {
                 <input id="stageName" name="stageName" className="input" required />
               </div>
               <div className="field">
+                <label htmlFor="relationType">Type de relation *</label>
+                <select id="relationType" name="relationType" className="select" defaultValue="LABEL">
+                  <option value="LABEL">Label (artiste signé)</option>
+                  <option value="EXTERNAL">Externe (mandat de réalisation)</option>
+                </select>
+              </div>
+              <div className="field">
                 <label htmlFor="country">Pays de résidence</label>
-                <input id="country" name="country" className="input" placeholder="Sénégal" />
+                <CountrySelect id="country" />
               </div>
               <div className="field">
                 <label htmlFor="photo">Photo de profil</label>
@@ -48,6 +56,10 @@ export default function ArtistCreateForm() {
               <div className="field">
                 <label htmlFor="bio">Bio (optionnel)</label>
                 <textarea id="bio" name="bio" className="textarea" />
+              </div>
+              <div className="field">
+                <label htmlFor="mandateNotes">Cadre du mandat (artistes externes)</label>
+                <textarea id="mandateNotes" name="mandateNotes" className="textarea" placeholder="Nature de la prestation, périmètre, échéances…" />
               </div>
 
               {state?.error && (

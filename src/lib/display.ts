@@ -77,3 +77,14 @@ export const interactionStatusBadge: Record<string, string> = {
   NEGATIVE: "badge-carmin",
   NO_REPLY: "badge-carmin",
 };
+
+// --- Type de relation artiste ---
+export const relationTypeLabel: Record<string, string> = {
+  LABEL: "Label",
+  EXTERNAL: "Externe",
+};
+
+export const relationTypeBadge: Record<string, string> = {
+  LABEL: "badge-green",
+  EXTERNAL: "badge-yellow",
+};

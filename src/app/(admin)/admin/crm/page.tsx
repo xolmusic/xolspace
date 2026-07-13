@@ -1,14 +1,24 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { fmtDate } from "@/lib/display";
-import { contactTypeLabel, interactionStatusLabel, interactionStatusBadge } from "@/lib/display";
+import { contactTypeLabel, CONTACT_TYPES } from "@/lib/display";
 import ContactCreateForm from "./ContactCreateForm";
 
-export default async function CrmPage() {
+export default async function CrmPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ type?: string; country?: string }>;
+}) {
+  const { type, country } = await searchParams;
   const now = new Date();
 
-  const [contacts, dueFollowUps] = await Promise.all([
+  const contactWhere: Record<string, unknown> = {};
+  if (type) contactWhere.type = type;
+  if (country) contactWhere.country = country;
+
+  const [contacts, dueFollowUps, allForFacets] = await Promise.all([
     prisma.contact.findMany({
+      where: contactWhere as never,
       orderBy: { name: "asc" },
       include: { _count: { select: { interactions: true } } },
     }),
@@ -21,7 +31,17 @@ export default async function CrmPage() {
       orderBy: { followUpAt: "asc" },
       include: { contact: true },
     }),
+    prisma.contact.findMany({ select: { type: true, country: true } }),
   ]);
+
+  // Pays reellement presents dans la base, pour le filtre.
+  const usedCountries = Array.from(
+    new Set(
+      allForFacets
+        .map((c: { country: string | null }) => c.country)
+        .filter((x: string | null): x is string => !!x)
+    )
+  ).sort();
 
   return (
     <div className="stack" style={{ gap: 22 }}>
@@ -33,6 +53,25 @@ export default async function CrmPage() {
           </p>
         </div>
         <ContactCreateForm />
+      </div>
+
+      <div className="stack" style={{ gap: 8 }}>
+        <div className="row" style={{ gap: 6, flexWrap: "wrap", alignItems: "center" }}>
+          <span style={{ fontSize: 12, color: "var(--text-mute)", marginRight: 2 }}>Type :</span>
+          <FilterChip label="Tous" href={buildHref(null, country)} active={!type} />
+          {CONTACT_TYPES.map((t) => (
+            <FilterChip key={t} label={contactTypeLabel[t]} href={buildHref(t, country)} active={type === t} />
+          ))}
+        </div>
+        {usedCountries.length > 0 && (
+          <div className="row" style={{ gap: 6, flexWrap: "wrap", alignItems: "center" }}>
+            <span style={{ fontSize: 12, color: "var(--text-mute)", marginRight: 2 }}>Pays :</span>
+            <FilterChip label="Tous" href={buildHref(type, null)} active={!country} />
+            {usedCountries.map((c: string) => (
+              <FilterChip key={c} label={c} href={buildHref(type, c)} active={country === c} />
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Relances a faire */}
@@ -115,5 +154,21 @@ export default async function CrmPage() {
         </div>
       )}
     </div>
+  );
+}
+
+function buildHref(type: string | null | undefined, country: string | null | undefined) {
+  const p = new URLSearchParams();
+  if (type) p.set("type", type);
+  if (country) p.set("country", country);
+  const qs = p.toString();
+  return qs ? `/admin/crm?${qs}` : "/admin/crm";
+}
+
+function FilterChip({ label, href, active }: { label: string; href: string; active: boolean }) {
+  return (
+    <a href={href} className={`btn btn-xs ${active ? "btn-primary" : ""}`}>
+      {label}
+    </a>
   );
 }

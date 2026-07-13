@@ -4,6 +4,7 @@ import { useActionState, useState } from "react";
 import { useRouter } from "next/navigation";
 import { updateContact } from "@/server/crm";
 import { contactTypeLabel, CONTACT_TYPES } from "@/lib/display";
+import CountrySelect from "@/components/CountrySelect";
 
 type Contact = {
   id: string;
@@ -66,7 +67,7 @@ export default function ContactEditForm({ contact }: { contact: Contact }) {
                 </div>
                 <div className="field">
                   <label htmlFor="country">Pays</label>
-                  <input id="country" name="country" className="input" defaultValue={contact.country ?? ""} />
+                  <CountrySelect id="country" defaultValue={contact.country} />
                 </div>
                 <div className="field">
                   <label htmlFor="socials">Réseaux / site</label>

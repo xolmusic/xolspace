@@ -25,6 +25,8 @@ model Artist {
   photoKey     String?
   country      String?
   bio          String?
+  relationType RelationType @default(LABEL)   // artiste du label ou externe
+  mandateNotes String?                        // cadre du mandat (externes)
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 
@@ -34,6 +36,12 @@ model Artist {
   epk          Epk?
 
   @@index([stageName])
+  @@index([relationType])
+}
+
+enum RelationType {
+  LABEL      // artiste signe / du label
+  EXTERNAL   // artiste externe ayant mandate le label
 }
 
 enum ProjectType {
