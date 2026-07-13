@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState } from "react";
 import { logoutAction } from "@/app/login/actions";
 
 const NAV = [
@@ -15,88 +16,79 @@ const NAV = [
 
 export default function Sidebar() {
   const path = usePathname();
+  const [open, setOpen] = useState(false);
+
+  const nav = (
+    <nav className="xol-nav">
+      {NAV.map((item) => {
+        const active =
+          item.href === "/admin" ? path === "/admin" : path.startsWith(item.href);
+        return (
+          <Link
+            key={item.href}
+            href={item.href}
+            onClick={() => setOpen(false)}
+            className={`xol-nav-item${active ? " active" : ""}`}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <path d={item.icon} />
+            </svg>
+            {item.label}
+          </Link>
+        );
+      })}
+    </nav>
+  );
+
+  const logo = (
+    <Image
+      src="/brand/xol-logo.png"
+      alt="XOL Music"
+      width={104}
+      height={45}
+      style={{ height: "auto", width: 104, filter: "brightness(0) invert(1)", opacity: 0.95 }}
+    />
+  );
+
+  const logout = (
+    <form action={logoutAction}>
+      <button type="submit" className="btn btn-ghost btn-sm xol-logout">
+        Se déconnecter
+      </button>
+    </form>
+  );
 
   return (
-    <aside
-      style={{
-        width: 236,
-        flexShrink: 0,
-        background: "var(--xol-indigo-deep)",
-        color: "#e9e7f5",
-        display: "flex",
-        flexDirection: "column",
-        padding: "22px 16px",
-        position: "sticky",
-        top: 0,
-        height: "100vh",
-      }}
-    >
-      <Link href="/admin" style={{ marginBottom: 28, paddingLeft: 6 }}>
-        <Image
-          src="/brand/xol-logo.png"
-          alt="XOL Music"
-          width={104}
-          height={45}
-          style={{
-            height: "auto",
-            width: 104,
-            filter: "brightness(0) invert(1)",
-            opacity: 0.95,
-          }}
-        />
-      </Link>
-
-      <nav style={{ display: "flex", flexDirection: "column", gap: 3 }}>
-        {NAV.map((item) => {
-          const active =
-            item.href === "/admin"
-              ? path === "/admin"
-              : path.startsWith(item.href);
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 11,
-                padding: "9px 12px",
-                borderRadius: 9,
-                fontSize: 14,
-                fontWeight: active ? 600 : 500,
-                background: active ? "var(--xol-indigo)" : "transparent",
-                color: active ? "#fff7e6" : "#a9a5cf",
-              }}
-            >
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d={item.icon} />
-              </svg>
-              {item.label}
-            </Link>
-          );
-        })}
-      </nav>
-
-      <div style={{ marginTop: "auto" }}>
-        <form action={logoutAction}>
-          <button
-            type="submit"
-            className="btn btn-ghost btn-sm"
-            style={{ color: "#a9a5cf", width: "100%", justifyContent: "flex-start" }}
-          >
-            Se déconnecter
-          </button>
-        </form>
+    <>
+      {/* Barre superieure mobile */}
+      <div className="xol-topbar">
+        <Link href="/admin" onClick={() => setOpen(false)}>{logo}</Link>
+        <button
+          className="xol-burger"
+          aria-label="Menu"
+          onClick={() => setOpen((v) => !v)}
+        >
+          {open ? (
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+              <path d="M6 6l12 12M18 6L6 18" />
+            </svg>
+          ) : (
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+              <path d="M4 7h16M4 12h16M4 17h16" />
+            </svg>
+          )}
+        </button>
       </div>
-    </aside>
+
+      {/* Overlay + panneau mobile */}
+      {open && <div className="xol-overlay" onClick={() => setOpen(false)} />}
+      <aside className={`xol-sidebar${open ? " open" : ""}`}>
+        <Link href="/admin" onClick={() => setOpen(false)} className="xol-sidebar-logo">
+          {logo}
+        </Link>
+        {nav}
+        <div style={{ marginTop: "auto" }}>{logout}</div>
+      </aside>
+    </>
   );
 }

@@ -27,7 +27,7 @@ export default async function ProjectsPage() {
         </div>
       ) : (
         <div className="card" style={{ padding: 0, overflow: "hidden" }}>
-          <table className="tbl">
+          <div className="table-wrap"><table className="tbl">
             <thead>
               <tr>
                 <th style={{ width: 34 }}></th>
@@ -71,7 +71,7 @@ export default async function ProjectsPage() {
                 </tr>
               ))}
             </tbody>
-          </table>
+          </table></div>
         </div>
       )}
     </div>

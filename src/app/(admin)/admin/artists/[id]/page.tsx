@@ -50,7 +50,7 @@ export default async function ArtistDetailPage({
         ← Artistes
       </Link>
 
-      <div className="row" style={{ gap: 18, alignItems: "flex-start" }}>
+      <div className="row" style={{ gap: 18, alignItems: "flex-start", flexWrap: "wrap" }}>
         {artist.photoKey ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img

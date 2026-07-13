@@ -24,7 +24,7 @@ export default async function ArtistsPage() {
         </div>
       ) : (
         <div className="card" style={{ padding: 0, overflow: "hidden" }}>
-          <table className="tbl">
+          <div className="table-wrap"><table className="tbl">
             <thead>
               <tr>
                 <th style={{ width: 40 }}></th>
@@ -55,7 +55,7 @@ export default async function ArtistsPage() {
                 </tr>
               ))}
             </tbody>
-          </table>
+          </table></div>
         </div>
       )}
     </div>

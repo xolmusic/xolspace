@@ -54,7 +54,7 @@ export default async function LinksPage() {
         </div>
       ) : (
         <div className="card" style={{ padding: 0, overflow: "hidden" }}>
-          <table className="tbl">
+          <div className="table-wrap"><table className="tbl">
             <thead>
               <tr>
                 <th>Cible</th>
@@ -138,7 +138,7 @@ export default async function LinksPage() {
                 );
               })}
             </tbody>
-          </table>
+          </table></div>
         </div>
       )}
     </div>

@@ -45,7 +45,7 @@ export default async function CataloguePage() {
         </div>
       ) : (
         <div className="card" style={{ padding: 0, overflow: "hidden" }}>
-          <table className="tbl">
+          <div className="table-wrap"><table className="tbl">
             <thead>
               <tr>
                 <th style={{ width: 34 }}></th>
@@ -121,7 +121,7 @@ export default async function CataloguePage() {
                 </tr>
               ))}
             </tbody>
-          </table>
+          </table></div>
         </div>
       )}
     </div>

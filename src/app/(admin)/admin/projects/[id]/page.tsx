@@ -47,7 +47,7 @@ export default async function ProjectDetailPage({
         ← Projets
       </Link>
 
-      <div className="row" style={{ gap: 20, alignItems: "flex-start" }}>
+      <div className="row" style={{ gap: 20, alignItems: "flex-start", flexWrap: "wrap" }}>
         <Cover src={project.coverKey ? `/api/img/${project.coverKey}` : null} size={140} radius={12} />
         <div style={{ flex: 1 }}>
           <div className="row" style={{ gap: 8, marginBottom: 6 }}>
