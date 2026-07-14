@@ -47,11 +47,12 @@ export const contactTypeLabel: Record<string, string> = {
   LABEL: "Label",
   STUDIO: "Studio",
   INFLUENCER: "Influenceur",
+  TV: "TV",
 };
 
 export const CONTACT_TYPES = [
   "JOURNALIST", "RADIO", "BLOG", "PLAYLIST_CURATOR", "MANAGER",
-  "BOOKER", "LABEL", "STUDIO", "INFLUENCER",
+  "BOOKER", "LABEL", "STUDIO", "INFLUENCER", "TV",
 ];
 
 export const interactionStatusLabel: Record<string, string> = {
@@ -87,4 +88,36 @@ export const relationTypeLabel: Record<string, string> = {
 export const relationTypeBadge: Record<string, string> = {
   LABEL: "badge-green",
   EXTERNAL: "badge-yellow",
+};
+
+// --- Campagnes ---
+export const campaignStatusLabel: Record<string, string> = {
+  DRAFT: "Brouillon",
+  ACTIVE: "En cours",
+  CLOSED: "Terminée",
+};
+export const campaignStatusBadge: Record<string, string> = {
+  DRAFT: "badge",
+  ACTIVE: "badge-yellow",
+  CLOSED: "badge-green",
+};
+
+export const recipientStatusLabel: Record<string, string> = {
+  TO_SEND: "À envoyer",
+  SENT: "Envoyé",
+  REPLIED: "Répondu",
+  PUBLISHED: "Publié",
+  DECLINED: "Décliné",
+  NO_REPLY: "Sans réponse",
+};
+export const RECIPIENT_STATUSES = [
+  "TO_SEND", "SENT", "REPLIED", "PUBLISHED", "DECLINED", "NO_REPLY",
+];
+export const recipientStatusBadge: Record<string, string> = {
+  TO_SEND: "badge",
+  SENT: "badge-yellow",
+  REPLIED: "badge-yellow",
+  PUBLISHED: "badge-green",
+  DECLINED: "badge-carmin",
+  NO_REPLY: "badge-carmin",
 };

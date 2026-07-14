@@ -27,6 +27,10 @@ export default async function ArtistDetailPage({
         orderBy: { createdAt: "desc" },
         include: { project: true },
       },
+      campaigns: {
+        orderBy: { createdAt: "desc" },
+        include: { project: true, recipients: { select: { status: true } } },
+      },
     },
   });
   if (!artist) notFound();
@@ -197,6 +201,52 @@ export default async function ArtistDetailPage({
                 </div>
               </div>
             ))}
+          </div>
+        )}
+      </section>
+
+      <section>
+        <h2 style={{ fontSize: 18, marginBottom: 4 }}>Campagnes média</h2>
+        <p className="muted" style={{ fontSize: 14, marginBottom: 14 }}>
+          Historique des campagnes de promotion et leurs retombées.
+        </p>
+        {artist.campaigns.length === 0 ? (
+          <div className="card"><p className="muted" style={{ fontSize: 14 }}>Aucune campagne pour cet artiste.</p></div>
+        ) : (
+          <div className="card" style={{ padding: 0, overflow: "hidden" }}>
+            <div className="table-wrap">
+              <table className="tbl">
+                <thead>
+                  <tr>
+                    <th>Campagne</th>
+                    <th>Projet</th>
+                    <th style={{ textAlign: "right" }}>Contactés</th>
+                    <th style={{ textAlign: "right" }}>Réponses</th>
+                    <th style={{ textAlign: "right" }}>Publications</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {artist.campaigns.map((c: (typeof artist.campaigns)[number]) => {
+                    const recs = c.recipients;
+                    const replied = recs.filter((x: { status: string }) => ["REPLIED", "PUBLISHED"].includes(x.status)).length;
+                    const published = recs.filter((x: { status: string }) => x.status === "PUBLISHED").length;
+                    return (
+                      <tr key={c.id}>
+                        <td>
+                          <Link href={`/admin/campaigns/${c.id}`} className="t-title" style={{ color: "var(--xol-indigo)" }}>
+                            {c.name}
+                          </Link>
+                        </td>
+                        <td className="t-sub">{c.project?.title ?? "—"}</td>
+                        <td className="t-sub" style={{ textAlign: "right", fontVariantNumeric: "tabular-nums" }}>{recs.length}</td>
+                        <td className="t-sub" style={{ textAlign: "right", fontVariantNumeric: "tabular-nums" }}>{replied}</td>
+                        <td className="t-sub" style={{ textAlign: "right", fontVariantNumeric: "tabular-nums", color: published > 0 ? "var(--xol-indigo)" : undefined }}>{published}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
       </section>

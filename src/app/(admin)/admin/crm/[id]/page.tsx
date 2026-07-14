@@ -60,7 +60,9 @@ export default async function ContactDetailPage({
           <ContactEditForm contact={{
             id: contact.id, name: contact.name, type: contact.type,
             organization: contact.organization, email: contact.email, phone: contact.phone,
-            country: contact.country, socials: contact.socials, notes: contact.notes,
+            country: contact.country, city: contact.city, language: contact.language,
+            genres: contact.genres, followedArtists: contact.followedArtists,
+            socials: contact.socials, notes: contact.notes,
           }} />
           <form action={deleteContact}>
             <input type="hidden" name="id" value={contact.id} />

@@ -34,6 +34,7 @@ model Artist {
   tracks       Track[]
   shareLinks   ShareLink[]
   epk          Epk?
+  campaigns    Campaign[]
 
   @@index([stageName])
   @@index([relationType])
@@ -75,6 +76,7 @@ model Project {
 
   tracks       Track[]
   shareLinks   ShareLink[]
+  campaigns    Campaign[]
 
   @@index([artistId])
 }
@@ -220,25 +222,32 @@ enum ContactType {
   LABEL
   STUDIO
   INFLUENCER
+  TV
 }
 
 model Contact {
   id            String       @id @default(cuid())
   name          String
   type          ContactType
-  organization  String?
+  organization  String?               // media / structure
   email         String?
   phone         String?
   country       String?
+  city          String?
+  language      String?               // langue de travail
+  genres        String?               // genres couverts (liste libre, separes par des virgules)
+  followedArtists String?             // artistes suivis (texte libre)
   socials       String?               // liens libres (instagram, site...)
   notes         String?
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
 
   interactions  Interaction[]
+  campaignRecipients CampaignRecipient[]
 
   @@index([type])
   @@index([name])
+  @@index([country])
 }
 
 enum InteractionStatus {
@@ -272,4 +281,64 @@ model Interaction {
   @@index([contactId])
   @@index([status])
   @@index([followUpAt])
+}
+
+// --- Campagnes media (promo d'une sortie) ---
+enum CampaignStatus {
+  DRAFT       // brouillon
+  ACTIVE      // en cours
+  CLOSED      // terminee
+}
+
+model Campaign {
+  id             String    @id @default(cuid())
+  name           String
+  status         CampaignStatus @default(DRAFT)
+  pitch          String?               // pitch du morceau / angle
+  shareToken     String?               // lien d'ecoute privee associe (token)
+  emailSubject   String?
+  emailBody      String?               // modele avec variables {{prenom}} etc.
+  signature      String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  artist         Artist    @relation(fields: [artistId], references: [id], onDelete: Cascade)
+  artistId       String
+  project        Project?  @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  projectId      String?
+
+  recipients     CampaignRecipient[]
+
+  @@index([artistId])
+  @@index([projectId])
+}
+
+enum RecipientStatus {
+  TO_SEND     // a envoyer
+  SENT        // envoye
+  REPLIED     // a repondu
+  PUBLISHED   // a publie
+  DECLINED    // pas interesse
+  NO_REPLY    // sans reponse
+}
+
+model CampaignRecipient {
+  id           String   @id @default(cuid())
+  status       RecipientStatus @default(TO_SEND)
+  sentAt       DateTime?
+  repliedAt    DateTime?
+  publishedAt  DateTime?
+  resultUrl    String?               // lien de l'article / playlist / passage
+  notes        String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  campaign     Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  campaignId   String
+  contact      Contact  @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  contactId    String
+
+  @@unique([campaignId, contactId])
+  @@index([campaignId])
+  @@index([contactId])
 }

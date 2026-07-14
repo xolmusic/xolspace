@@ -55,9 +55,25 @@ export default function ContactCreateForm() {
                   <CountrySelect id="country" />
                 </div>
                 <div className="field">
+                  <label htmlFor="city">Ville</label>
+                  <input id="city" name="city" className="input" />
+                </div>
+                <div className="field">
+                  <label htmlFor="language">Langue</label>
+                  <input id="language" name="language" className="input" placeholder="Français, Anglais…" />
+                </div>
+                <div className="field">
                   <label htmlFor="socials">Réseaux / site</label>
                   <input id="socials" name="socials" className="input" placeholder="lien" />
                 </div>
+              </div>
+              <div className="field">
+                <label htmlFor="genres">Genres couverts</label>
+                <input id="genres" name="genres" className="input" placeholder="Afrobeats, Gospel, Jazz…" />
+              </div>
+              <div className="field">
+                <label htmlFor="followedArtists">Artistes suivis</label>
+                <input id="followedArtists" name="followedArtists" className="input" />
               </div>
               <div className="field">
                 <label htmlFor="notes">Notes</label>

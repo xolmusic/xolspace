@@ -14,6 +14,10 @@ type Contact = {
   email: string | null;
   phone: string | null;
   country: string | null;
+  city: string | null;
+  language: string | null;
+  genres: string | null;
+  followedArtists: string | null;
   socials: string | null;
   notes: string | null;
 };
@@ -70,9 +74,25 @@ export default function ContactEditForm({ contact }: { contact: Contact }) {
                   <CountrySelect id="country" defaultValue={contact.country} />
                 </div>
                 <div className="field">
+                  <label htmlFor="city">Ville</label>
+                  <input id="city" name="city" className="input" defaultValue={contact.city ?? ""} />
+                </div>
+                <div className="field">
+                  <label htmlFor="language">Langue</label>
+                  <input id="language" name="language" className="input" placeholder="Français, Anglais…" defaultValue={contact.language ?? ""} />
+                </div>
+                <div className="field">
                   <label htmlFor="socials">Réseaux / site</label>
                   <input id="socials" name="socials" className="input" defaultValue={contact.socials ?? ""} />
                 </div>
+              </div>
+              <div className="field">
+                <label htmlFor="genres">Genres couverts</label>
+                <input id="genres" name="genres" className="input" placeholder="Afrobeats, Gospel, Jazz…" defaultValue={contact.genres ?? ""} />
+              </div>
+              <div className="field">
+                <label htmlFor="followedArtists">Artistes suivis</label>
+                <input id="followedArtists" name="followedArtists" className="input" defaultValue={contact.followedArtists ?? ""} />
               </div>
               <div className="field">
                 <label htmlFor="notes">Notes</label>
