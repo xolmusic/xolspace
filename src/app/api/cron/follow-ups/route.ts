@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { mergeTemplate } from "@/lib/merge";
 import { sendEmail, buildHtml, fromAddress, trackingUrls } from "@/lib/email";
 import { appUrl } from "@/lib/display";
+import type { RecipientStatus } from "@prisma/client";
 
 // Cron de relances : appele periodiquement par Vercel Cron.
 // Protege par un secret (CRON_SECRET) passe en en-tete Authorization.
@@ -19,7 +20,7 @@ export async function GET(req: NextRequest) {
   const base = appUrl();
 
   // Statuts consideres comme "clos" : on ne relance pas.
-  const closed = ["REPLIED", "PUBLISHED", "DECLINED"];
+  const closed = ["REPLIED", "PUBLISHED", "DECLINED"] as RecipientStatus[];
 
   // --- 1re relance ---
   const due1 = await prisma.campaignRecipient.findMany({

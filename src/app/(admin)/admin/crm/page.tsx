@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import type { InteractionStatus } from "@prisma/client";
 import { fmtDate } from "@/lib/display";
 import { contactTypeLabel, CONTACT_TYPES } from "@/lib/display";
 import ContactCreateForm from "./ContactCreateForm";
@@ -27,7 +28,7 @@ export default async function CrmPage({
     prisma.interaction.findMany({
       where: {
         followUpAt: { lte: now },
-        status: { notIn: ["POSITIVE", "NEGATIVE", "NO_REPLY"] },
+        status: { notIn: ["POSITIVE", "NEGATIVE", "NO_REPLY"] as InteractionStatus[] },
       },
       orderBy: { followUpAt: "asc" },
       include: { contact: true },
