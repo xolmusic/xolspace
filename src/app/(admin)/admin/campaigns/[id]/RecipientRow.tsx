@@ -9,6 +9,8 @@ type Recipient = {
   id: string;
   status: string;
   resultUrl: string | null;
+  clickCount: number;
+  unsubscribed: boolean;
   contact: { id: string; name: string; email: string | null; organization: string | null };
 };
 
@@ -51,6 +53,14 @@ export default function RecipientRow({
           <span className={`badge ${recipientStatusBadge[recipient.status]}`}>
             {recipientStatusLabel[recipient.status]}
           </span>
+          {recipient.clickCount > 0 && (
+            <span className="badge badge-green" style={{ marginLeft: 4 }} title="Clics sur le lien d'écoute">
+              ▶ {recipient.clickCount}
+            </span>
+          )}
+          {recipient.unsubscribed && (
+            <span className="badge badge-carmin" style={{ marginLeft: 4 }}>Désinscrit</span>
+          )}
         </td>
         <td>
           <div className="tbl-actions">

@@ -6,6 +6,7 @@ import { markAllSent, deleteCampaign } from "@/server/campaigns";
 import CampaignEditor from "./CampaignEditor";
 import RecipientTargeting from "./RecipientTargeting";
 import RecipientRow from "./RecipientRow";
+import SendCampaignButton from "./SendCampaignButton";
 
 export default async function CampaignDetailPage({
   params,
@@ -49,6 +50,9 @@ export default async function CampaignDetailPage({
   const sent = r.filter((x: (typeof r)[number]) => x.status !== "TO_SEND").length;
   const replied = r.filter((x: (typeof r)[number]) => ["REPLIED", "PUBLISHED"].includes(x.status)).length;
   const published = r.filter((x: (typeof r)[number]) => x.status === "PUBLISHED").length;
+  const clicked = r.filter((x: (typeof r)[number]) => (x.clickCount ?? 0) > 0).length;
+  const toSend = r.filter((x: (typeof r)[number]) => x.status === "TO_SEND" && !x.unsubscribed && x.contact.email).length;
+  const emailConfigured = Boolean(process.env.RESEND_API_KEY);
 
   const base = appUrl();
   const link = campaign.shareToken ? `${base}/s/${campaign.shareToken}` : null;
@@ -81,6 +85,7 @@ export default async function CampaignDetailPage({
       <div className="grid" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))", gap: 10 }}>
         <Stat label="Destinataires" value={total} />
         <Stat label="Envoyés" value={sent} />
+        <Stat label="Clics écoute" value={clicked} />
         <Stat label="Réponses" value={replied} />
         <Stat label="Publications" value={published} accent />
       </div>
@@ -94,6 +99,9 @@ export default async function CampaignDetailPage({
             pitch: campaign.pitch, shareToken: campaign.shareToken,
             emailSubject: campaign.emailSubject, emailBody: campaign.emailBody,
             signature: campaign.signature, projectId: campaign.projectId,
+            fromName: campaign.fromName, autoFollowUp: campaign.autoFollowUp,
+            followUp1Days: campaign.followUp1Days, followUp2Days: campaign.followUp2Days,
+            followUp1Body: campaign.followUp1Body, followUp2Body: campaign.followUp2Body,
           }}
           shareOptions={shareOptions}
           projects={projectOpts}
@@ -104,11 +112,12 @@ export default async function CampaignDetailPage({
       <section>
         <div className="row" style={{ justifyContent: "space-between", marginBottom: 12, flexWrap: "wrap", gap: 8 }}>
           <h2 style={{ fontSize: 17 }}>Destinataires ({total})</h2>
-          <div className="row" style={{ gap: 8 }}>
+          <div className="row" style={{ gap: 8, flexWrap: "wrap" }}>
+            <SendCampaignButton campaignId={campaign.id} toSendCount={toSend} configured={emailConfigured} />
             {sent < total && total > 0 && (
               <form action={markAllSent}>
                 <input type="hidden" name="campaignId" value={campaign.id} />
-                <button className="btn btn-sm" type="submit">Tout marquer « envoyé »</button>
+                <button className="btn btn-sm" type="submit">Marquer « envoyé » (manuel)</button>
               </form>
             )}
             <RecipientTargeting campaignId={campaign.id} countries={countries} />
@@ -135,6 +144,7 @@ export default async function CampaignDetailPage({
                       key={rec.id}
                       recipient={{
                         id: rec.id, status: rec.status, resultUrl: rec.resultUrl,
+                        clickCount: rec.clickCount, unsubscribed: rec.unsubscribed,
                         contact: { id: rec.contact.id, name: rec.contact.name, email: rec.contact.email, organization: rec.contact.organization },
                       }}
                       campaignId={campaign.id}

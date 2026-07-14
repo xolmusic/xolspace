@@ -15,6 +15,12 @@ type Campaign = {
   emailSubject: string | null;
   emailBody: string | null;
   signature: string | null;
+  fromName: string | null;
+  autoFollowUp: boolean;
+  followUp1Days: number;
+  followUp2Days: number;
+  followUp1Body: string | null;
+  followUp2Body: string | null;
   projectId: string | null;
 };
 
@@ -105,6 +111,34 @@ export default function CampaignEditor({
       <div className="field">
         <label htmlFor="signature">Signature</label>
         <textarea id="signature" name="signature" className="textarea" defaultValue={campaign.signature ?? ""} placeholder="Gwen Thomas — XOL Music" />
+      </div>
+      <div className="field">
+        <label htmlFor="fromName">Nom d&apos;expéditeur</label>
+        <input id="fromName" name="fromName" className="input" defaultValue={campaign.fromName ?? ""} placeholder="XOL Music" />
+      </div>
+
+      <h3 style={{ fontSize: 15, margin: "10px 0 4px" }}>Relances automatiques</h3>
+      <label className="row" style={{ gap: 8, alignItems: "center", marginBottom: 10, cursor: "pointer" }}>
+        <input type="checkbox" name="autoFollowUp" defaultChecked={campaign.autoFollowUp} value="on" />
+        <span style={{ fontSize: 14 }}>Activer les relances automatiques pour les contacts sans réponse</span>
+      </label>
+      <div className="grid" style={{ gridTemplateColumns: "1fr 1fr" }}>
+        <div className="field">
+          <label htmlFor="followUp1Days">1re relance (jours après envoi)</label>
+          <input id="followUp1Days" name="followUp1Days" type="number" className="input" defaultValue={campaign.followUp1Days} />
+        </div>
+        <div className="field">
+          <label htmlFor="followUp2Days">2e relance (jours après envoi)</label>
+          <input id="followUp2Days" name="followUp2Days" type="number" className="input" defaultValue={campaign.followUp2Days} />
+        </div>
+      </div>
+      <div className="field">
+        <label htmlFor="followUp1Body">Message 1re relance</label>
+        <textarea id="followUp1Body" name="followUp1Body" className="textarea" defaultValue={campaign.followUp1Body ?? ""} placeholder={"Bonjour {{prenom}}, je me permets de revenir vers vous au sujet de {{artiste}}…"} />
+      </div>
+      <div className="field">
+        <label htmlFor="followUp2Body">Message 2e relance (dernière)</label>
+        <textarea id="followUp2Body" name="followUp2Body" className="textarea" defaultValue={campaign.followUp2Body ?? ""} />
       </div>
 
       <div className="row" style={{ justifyContent: "flex-end", gap: 8 }}>

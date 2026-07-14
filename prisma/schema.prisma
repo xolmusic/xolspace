@@ -299,6 +299,12 @@ model Campaign {
   emailSubject   String?
   emailBody      String?               // modele avec variables {{prenom}} etc.
   signature      String?
+  fromName       String?               // nom d'expediteur affiche
+  followUp1Days  Int       @default(5)  // 1re relance : J+5
+  followUp2Days  Int       @default(15) // 2e relance : J+15
+  followUp1Body  String?               // message de la 1re relance
+  followUp2Body  String?               // message de la 2e relance
+  autoFollowUp   Boolean   @default(false) // relances automatiques activees
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
 
@@ -330,6 +336,20 @@ model CampaignRecipient {
   publishedAt  DateTime?
   resultUrl    String?               // lien de l'article / playlist / passage
   notes        String?
+
+  // Envoi & tracking
+  trackId          String   @unique @default(cuid()) // identifiant de suivi (URL de clic)
+  clickCount       Int      @default(0)               // clics sur le lien d'ecoute
+  firstClickAt     DateTime?
+  unsubscribed     Boolean  @default(false)           // desinscription
+  lastError        String?                            // erreur d'envoi eventuelle
+
+  // Relances programmees
+  followUp1SentAt  DateTime?
+  followUp2SentAt  DateTime?
+  followUp1DueAt   DateTime?
+  followUp2DueAt   DateTime?
+
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 

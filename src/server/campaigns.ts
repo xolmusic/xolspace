@@ -58,6 +58,12 @@ export async function updateCampaign(_prev: unknown, formData: FormData): Promis
       emailSubject: clean("emailSubject"),
       emailBody: clean("emailBody"),
       signature: clean("signature"),
+      fromName: clean("fromName"),
+      autoFollowUp: String(formData.get("autoFollowUp") ?? "") === "on",
+      followUp1Days: formData.get("followUp1Days") ? Number(formData.get("followUp1Days")) : 5,
+      followUp2Days: formData.get("followUp2Days") ? Number(formData.get("followUp2Days")) : 15,
+      followUp1Body: clean("followUp1Body"),
+      followUp2Body: clean("followUp2Body"),
     },
   });
   revalidatePath(`/admin/campaigns/${id}`);
@@ -141,4 +147,94 @@ export async function markAllSent(formData: FormData) {
     data: { status: "SENT", sentAt: new Date() },
   });
   revalidatePath(`/admin/campaigns/${campaignId}`);
+}
+
+// ============ PHASE 2 — ENVOI & RELANCES ============
+import { mergeTemplate } from "@/lib/merge";
+import { sendEmail, buildHtml, fromAddress, trackingUrls } from "@/lib/email";
+import { appUrl } from "@/lib/display";
+
+// Envoie la campagne a tous les destinataires "a envoyer", non desinscrits,
+// avec email valide. Personnalise chaque message, injecte le lien de suivi,
+// programme les relances si activees. Retourne un bilan.
+export async function sendCampaign(formData: FormData): Promise<{ sent: number; failed: number; skipped: number } | { error: string }> {
+  await requireAdmin();
+  const campaignId = String(formData.get("campaignId"));
+
+  const campaign = await prisma.campaign.findUnique({
+    where: { id: campaignId },
+    include: {
+      artist: true,
+      project: true,
+      recipients: { where: { status: "TO_SEND", unsubscribed: false }, include: { contact: true } },
+    },
+  });
+  if (!campaign) return { error: "Campagne introuvable." };
+  if (!campaign.emailSubject || !campaign.emailBody) {
+    return { error: "Renseigne l'objet et le corps de l'email avant l'envoi." };
+  }
+
+  const base = appUrl();
+  const listenBase = campaign.shareToken ? `${base}/s/${campaign.shareToken}` : null;
+  const from = fromAddress(campaign.fromName);
+
+  let sent = 0, failed = 0, skipped = 0;
+
+  for (const rec of campaign.recipients) {
+    const email = rec.contact.email;
+    if (!email) { skipped++; continue; }
+
+    const { clickUrl, unsubscribeUrl } = trackingUrls(rec.trackId);
+    const data = {
+      contactName: rec.contact.name,
+      organization: rec.contact.organization,
+      artistName: campaign.artist.stageName,
+      projectName: campaign.project?.title ?? null,
+      pitch: campaign.pitch,
+      link: listenBase, // dans le texte, remplace ensuite par le lien de suivi
+      signature: campaign.signature,
+    };
+
+    const subject = mergeTemplate(campaign.emailSubject, data);
+    const bodyText = mergeTemplate(campaign.emailBody, data);
+    const html = buildHtml({
+      bodyText,
+      listenUrl: listenBase,
+      trackUrl: clickUrl,
+      unsubscribeUrl,
+    });
+
+    const res = await sendEmail({ to: email, from, subject, html });
+
+    if (res.ok) {
+      const now = new Date();
+      const due1 = new Date(now.getTime() + (campaign.followUp1Days ?? 5) * 86400000);
+      const due2 = new Date(now.getTime() + (campaign.followUp2Days ?? 15) * 86400000);
+      await prisma.campaignRecipient.update({
+        where: { id: rec.id },
+        data: {
+          status: "SENT",
+          sentAt: now,
+          lastError: null,
+          followUp1DueAt: campaign.autoFollowUp ? due1 : null,
+          followUp2DueAt: campaign.autoFollowUp ? due2 : null,
+        },
+      });
+      sent++;
+    } else {
+      await prisma.campaignRecipient.update({
+        where: { id: rec.id },
+        data: { lastError: res.error },
+      });
+      failed++;
+    }
+  }
+
+  // Passer la campagne en "active" apres un premier envoi.
+  if (sent > 0 && campaign.status === "DRAFT") {
+    await prisma.campaign.update({ where: { id: campaignId }, data: { status: "ACTIVE" } });
+  }
+
+  revalidatePath(`/admin/campaigns/${campaignId}`);
+  return { sent, failed, skipped };
 }
