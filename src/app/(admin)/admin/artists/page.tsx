@@ -69,6 +69,11 @@ export default async function ArtistsPage({
                       {a.stageName}
                     </Link>
                   </td>
+                  <td>
+                    <span className={`badge ${relationTypeBadge[a.relationType]}`}>
+                      {relationTypeLabel[a.relationType]}
+                    </span>
+                  </td>
                   <td className="t-sub">{a.country || "—"}</td>
                   <td className="t-sub" style={{ textAlign: "right", fontVariantNumeric: "tabular-nums" }}>
                     {a._count.projects}
