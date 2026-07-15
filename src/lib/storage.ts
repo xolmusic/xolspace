@@ -80,4 +80,5 @@ export const keys = {
     `projects/${projectId}/cover.${ext}`,
   trackAudio: (trackId: string) => `audio/tracks/${trackId}.mp3`,
   epkPhoto: (photoId: string, ext: string) => `epk/photos/${photoId}.${ext}`,
+  receipt: (receiptId: string, ext: string) => `finances/receipts/${receiptId}.${ext}`,
 };

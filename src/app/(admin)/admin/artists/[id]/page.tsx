@@ -2,7 +2,10 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import Cover from "@/components/Cover";
-import { projectTypeLabel, fmtDuration, relationTypeLabel, relationTypeBadge } from "@/lib/display";
+import { projectTypeLabel, fmtDuration, fmtDate, relationTypeLabel, relationTypeBadge } from "@/lib/display";
+import { fmtMoney } from "@/lib/money";
+import FinanceSummary from "@/components/FinanceSummary";
+import TransactionForm from "../../finances/TransactionForm";
 import SongUploader from "@/components/SongUploader";
 import AudioPlayer from "@/components/AudioPlayer";
 import ShareButton from "@/components/ShareButton";
@@ -31,6 +34,10 @@ export default async function ArtistDetailPage({
         orderBy: { createdAt: "desc" },
         include: { project: true, recipients: { select: { status: true } } },
       },
+      transactions: {
+        orderBy: { date: "desc" },
+        include: { project: true },
+      },
     },
   });
   if (!artist) notFound();
@@ -47,6 +54,28 @@ export default async function ArtistDetailPage({
   }));
 
   const looseTracks = artist.tracks.filter((t: (typeof artist.tracks)[number]) => !t.projectId);
+
+  // --- Finances de l'artiste ---
+  const financeCategories = await prisma.txCategory.findMany({
+    orderBy: [{ type: "asc" }, { position: "asc" }],
+  });
+  const catOpts = financeCategories.map((c: (typeof financeCategories)[number]) => ({
+    name: c.name,
+    type: c.type,
+  }));
+
+  const txs = artist.transactions;
+  const artistIncome = txs
+    .filter((t: (typeof txs)[number]) => t.type === "INCOME")
+    .reduce((s: number, t: (typeof txs)[number]) => s + t.amount, 0);
+  const artistExpense = txs
+    .filter((t: (typeof txs)[number]) => t.type === "EXPENSE")
+    .reduce((s: number, t: (typeof txs)[number]) => s + t.amount, 0);
+  // Les ecritures sont deja triees par date decroissante : la premiere de
+  // chaque type est la plus recente.
+  const lastExpense = txs.find((t: (typeof txs)[number]) => t.type === "EXPENSE") ?? null;
+  const lastIncome = txs.find((t: (typeof txs)[number]) => t.type === "INCOME") ?? null;
+  const isExternal = artist.relationType === "EXTERNAL";
 
   return (
     <div className="stack" style={{ gap: 28 }}>
@@ -248,6 +277,49 @@ export default async function ArtistDetailPage({
               </table>
             </div>
           </div>
+        )}
+      </section>
+
+      <section>
+        <div className="row" style={{ justifyContent: "space-between", marginBottom: 4, flexWrap: "wrap", gap: 8 }}>
+          <h2 style={{ fontSize: 18 }}>Finances</h2>
+          <TransactionForm
+            artists={artistOpts}
+            projects={projectOpts}
+            categories={catOpts}
+            fixedArtistId={artist.id}
+            trigger={<button type="button" className="btn btn-sm">+ Écriture</button>}
+          />
+        </div>
+        <p className="muted" style={{ fontSize: 14, marginBottom: 14 }}>
+          {isExternal
+            ? "Artiste externe : les entrées correspondent à ce que le label facture pour la prestation."
+            : "Artiste du label : ce qui est investi sur l'artiste et ce qu'il génère."}
+        </p>
+
+        <FinanceSummary income={artistIncome} expense={artistExpense} />
+
+        {(lastExpense || lastIncome) && (
+          <div className="row" style={{ gap: 20, flexWrap: "wrap", marginTop: 12, fontSize: 13, color: "var(--text-soft)" }}>
+            {lastExpense && (
+              <span>
+                Dernière dépense : <strong>{fmtMoney(lastExpense.amount)}</strong> ({lastExpense.category}, {fmtDate(lastExpense.date)})
+              </span>
+            )}
+            {lastIncome && (
+              <span>
+                Dernier revenu : <strong>{fmtMoney(lastIncome.amount)}</strong> ({lastIncome.category}, {fmtDate(lastIncome.date)})
+              </span>
+            )}
+          </div>
+        )}
+
+        {artist.transactions.length > 0 && (
+          <p style={{ marginTop: 12 }}>
+            <Link href={`/admin/finances?artistId=${artist.id}`} style={{ fontSize: 13, color: "var(--xol-indigo)" }}>
+              Voir le détail des {artist.transactions.length} écritures →
+            </Link>
+          </p>
         )}
       </section>
     </div>

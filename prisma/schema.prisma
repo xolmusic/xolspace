@@ -41,6 +41,7 @@ model Artist {
   shareLinks   ShareLink[]
   epk          Epk?
   campaigns    Campaign[]
+  transactions Transaction[]
 
   @@index([stageName])
   @@index([relationType])
@@ -74,6 +75,7 @@ model Project {
   upc          String?
   catalogRef   String?
   notes        String?
+  budget       Int?          // budget prevu, en FCFA entiers
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
 
@@ -83,6 +85,7 @@ model Project {
   tracks       Track[]
   shareLinks   ShareLink[]
   campaigns    Campaign[]
+  transactions Transaction[]
 
   @@index([artistId])
 }
@@ -367,4 +370,49 @@ model CampaignRecipient {
   @@unique([campaignId, contactId])
   @@index([campaignId])
   @@index([contactId])
+}
+
+// --- Finances : journal unique (depenses + entrees) ---
+enum TxType {
+  EXPENSE   // depense
+  INCOME    // entree
+}
+
+// Montants : entiers en FCFA. Le franc CFA n'a pas de decimales, le
+// stockage en entier est donc exact (aucun arrondi possible).
+model Transaction {
+  id          String   @id @default(cuid())
+  type        TxType
+  date        DateTime
+  amount      Int                   // FCFA, entier positif
+  category    String                // libelle de categorie (voir TxCategory)
+  label       String?               // description ("Studio", "Clip"...)
+  counterparty String?              // fournisseur ou payeur
+  receiptKey  String?               // justificatif (facture/recu) dans R2
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Rattachement : artiste et/ou projet, ou rien (frais generaux du label).
+  artist      Artist?  @relation(fields: [artistId], references: [id], onDelete: SetNull)
+  artistId    String?
+  project     Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  projectId   String?
+
+  @@index([type])
+  @@index([date])
+  @@index([artistId])
+  @@index([projectId])
+  @@index([category])
+}
+
+// Categories modifiables depuis l'interface (pas figees dans le code).
+model TxCategory {
+  id       String @id @default(cuid())
+  name     String
+  type     TxType
+  position Int    @default(0)
+
+  @@unique([name, type])
+  @@index([type])
 }

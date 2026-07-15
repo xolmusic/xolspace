@@ -14,6 +14,7 @@ const NAV = [
   { href: "/admin/epk", label: "Presskit EPK", icon: "M4 5h16v14H4zM4 9h16M9 5v14" },
   { href: "/admin/crm", label: "CRM", icon: "M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m6-1.13a4 4 0 100-8 4 4 0 000 8z" },
   { href: "/admin/campaigns", label: "Campagnes", icon: "M3 11l18-5v12L3 14v-3zM11.6 16.8a3 3 0 11-5.8-1.6" },
+  { href: "/admin/finances", label: "Finances", icon: "M12 1v22M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" },
   { href: "/admin/links", label: "Liens de partage", icon: "M10 13a5 5 0 007 0l2-2a5 5 0 00-7-7l-1 1M14 11a5 5 0 00-7 0l-2 2a5 5 0 007 7l1-1" },
 ];
 

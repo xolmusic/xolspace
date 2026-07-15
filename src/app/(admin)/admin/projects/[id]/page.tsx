@@ -9,6 +9,9 @@ import {
   fmtDate,
   fmtDuration,
 } from "@/lib/display";
+import FinanceSummary from "@/components/FinanceSummary";
+import TransactionForm from "../../finances/TransactionForm";
+import BudgetForm from "./BudgetForm";
 import AudioPlayer from "@/components/AudioPlayer";
 import SongUploader from "@/components/SongUploader";
 import TrackEditForm from "@/components/TrackEditForm";
@@ -28,9 +31,40 @@ export default async function ProjectDetailPage({
     include: {
       artist: true,
       tracks: { orderBy: { position: "asc" } },
+      transactions: { orderBy: { date: "desc" } },
     },
   });
   if (!project) notFound();
+
+  // --- Finances du projet ---
+  const financeCategories = await prisma.txCategory.findMany({
+    orderBy: [{ type: "asc" }, { position: "asc" }],
+  });
+  const catOpts = financeCategories.map((c: (typeof financeCategories)[number]) => ({
+    name: c.name,
+    type: c.type,
+  }));
+  const [allArtistsFin, allProjectsFin] = await Promise.all([
+    prisma.artist.findMany({ orderBy: { stageName: "asc" } }),
+    prisma.project.findMany({ orderBy: { title: "asc" } }),
+  ]);
+  const finArtistOpts = allArtistsFin.map((a: (typeof allArtistsFin)[number]) => ({
+    id: a.id,
+    stageName: a.stageName,
+  }));
+  const finProjectOpts = allProjectsFin.map((p: (typeof allProjectsFin)[number]) => ({
+    id: p.id,
+    title: p.title,
+    artistId: p.artistId,
+  }));
+
+  const ptxs = project.transactions;
+  const projectIncome = ptxs
+    .filter((t: (typeof ptxs)[number]) => t.type === "INCOME")
+    .reduce((s: number, t: (typeof ptxs)[number]) => s + t.amount, 0);
+  const projectExpense = ptxs
+    .filter((t: (typeof ptxs)[number]) => t.type === "EXPENSE")
+    .reduce((s: number, t: (typeof ptxs)[number]) => s + t.amount, 0);
 
   const [allArtists, allProjects] = await Promise.all([
     prisma.artist.findMany({ orderBy: { stageName: "asc" } }),
@@ -183,6 +217,33 @@ export default async function ProjectDetailPage({
             Supprimer le projet
           </button>
         </form>
+      </section>
+
+      <section>
+        <div className="row" style={{ justifyContent: "space-between", marginBottom: 14, flexWrap: "wrap", gap: 8 }}>
+          <h2 style={{ fontSize: 18 }}>Finances du projet</h2>
+          <div className="row" style={{ gap: 8 }}>
+            <BudgetForm projectId={project.id} budget={project.budget} />
+            <TransactionForm
+              artists={finArtistOpts}
+              projects={finProjectOpts}
+              categories={catOpts}
+              fixedArtistId={project.artistId}
+              fixedProjectId={project.id}
+              trigger={<button type="button" className="btn btn-sm">+ Écriture</button>}
+            />
+          </div>
+        </div>
+
+        <FinanceSummary income={projectIncome} expense={projectExpense} budget={project.budget} />
+
+        {ptxs.length > 0 && (
+          <p style={{ marginTop: 12 }}>
+            <Link href={`/admin/finances?projectId=${project.id}`} style={{ fontSize: 13, color: "var(--xol-indigo)" }}>
+              Voir le détail des {ptxs.length} écritures →
+            </Link>
+          </p>
+        )}
       </section>
     </div>
   );
