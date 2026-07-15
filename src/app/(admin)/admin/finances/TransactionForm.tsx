@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useRef, useState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createTransaction, updateTransaction } from "@/server/finances";
 
@@ -56,11 +56,15 @@ export default function TransactionForm({
   );
   const router = useRouter();
 
-  if (state?.ok && open) {
+  // Ne se declenche qu'a l'arrivee d'un NOUVEAU resultat d'action.
+  // (Fermer pendant le rendu rendait le formulaire irrouvrable :
+  //  state.ok restait vrai, la fenetre se refermait aussitot.)
+  useEffect(() => {
+    if (!state?.ok) return;
     setOpen(false);
     setReceipt(null);
     router.refresh();
-  }
+  }, [state, router]);
 
   const cats = categories.filter((c) => c.type === type);
   const artistProjects = projects.filter((p) => !artistId || p.artistId === artistId);

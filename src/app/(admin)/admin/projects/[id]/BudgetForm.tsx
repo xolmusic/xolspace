@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { setProjectBudget } from "@/server/finances";
 import { fmtMoney } from "@/lib/money";
@@ -16,10 +16,14 @@ export default function BudgetForm({
   const [state, action, pending] = useActionState(setProjectBudget, null);
   const router = useRouter();
 
-  if (state?.ok && open) {
+  // Ne se declenche qu'a l'arrivee d'un NOUVEAU resultat d'action.
+  // (Fermer pendant le rendu rendait le formulaire irrouvrable :
+  //  state.ok restait vrai, la fenetre se refermait aussitot.)
+  useEffect(() => {
+    if (!state?.ok) return;
     setOpen(false);
     router.refresh();
-  }
+  }, [state, router]);
 
   return (
     <>

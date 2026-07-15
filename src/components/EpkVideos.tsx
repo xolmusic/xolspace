@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { addEpkVideo, deleteEpkVideo } from "@/server/epk";
 import { youtubeId } from "@/lib/youtube";
@@ -10,7 +10,11 @@ type Video = { id: string; url: string; title: string | null };
 export default function EpkVideos({ epkId, videos }: { epkId: string; videos: Video[] }) {
   const [state, action, pending] = useActionState(addEpkVideo, null);
   const router = useRouter();
-  if (state?.ok) router.refresh();
+  // Rafraichit seulement quand une action vient d'aboutir (et non a
+  // chaque rendu, ce qui provoquait des rafraichissements en boucle).
+  useEffect(() => {
+    if (state?.ok) router.refresh();
+  }, [state, router]);
 
   return (
     <div>

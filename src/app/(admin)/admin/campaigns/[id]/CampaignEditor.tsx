@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { updateCampaign } from "@/server/campaigns";
 import { MERGE_VARIABLES } from "@/lib/merge";
@@ -38,7 +38,11 @@ export default function CampaignEditor({
 }) {
   const [state, action, pending] = useActionState(updateCampaign, null);
   const router = useRouter();
-  if (state?.ok) router.refresh();
+  // Rafraichit seulement quand une action vient d'aboutir (et non a
+  // chaque rendu, ce qui provoquait des rafraichissements en boucle).
+  useEffect(() => {
+    if (state?.ok) router.refresh();
+  }, [state, router]);
 
   return (
     <form action={action} className="card">

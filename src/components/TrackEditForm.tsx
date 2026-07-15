@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useRef, useState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { updateTrack, replaceTrackAudio } from "@/server/tracks";
 import { uploadDirect } from "@/lib/upload-client";
@@ -34,10 +34,14 @@ export default function TrackEditForm({
   const [projectId, setProjectId] = useState(track.projectId ?? "");
   const router = useRouter();
 
-  if (state?.ok && open) {
+  // Ne se declenche qu'a l'arrivee d'un NOUVEAU resultat d'action.
+  // (Fermer pendant le rendu rendait le formulaire irrouvrable :
+  //  state.ok restait vrai, la fenetre se refermait aussitot.)
+  useEffect(() => {
+    if (!state?.ok) return;
     setOpen(false);
     router.refresh();
-  }
+  }, [state, router]);
 
   // Si un projet est choisi, l'artiste est impose par le projet.
   const lockedArtist = projectId

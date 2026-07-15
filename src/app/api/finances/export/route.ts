@@ -1,12 +1,14 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getSession } from "@/lib/auth";
+import { getCurrentAdmin } from "@/lib/auth";
 
 // Export CSV du journal, en respectant les filtres actifs.
 // Format pensé pour un comptable : une ligne par écriture, montants en FCFA.
 export async function GET(req: NextRequest) {
-  const session = await getSession();
-  if (!session) return new Response("Unauthorized", { status: 401 });
+  // Donnees financieres : super admin uniquement.
+  const admin = await getCurrentAdmin();
+  if (!admin) return new Response("Unauthorized", { status: 401 });
+  if (admin.role !== "SUPER_ADMIN") return new Response("Forbidden", { status: 403 });
 
   const sp = req.nextUrl.searchParams;
   const where: Record<string, unknown> = {};

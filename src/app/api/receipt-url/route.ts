@@ -1,12 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSession } from "@/lib/auth";
+import { getCurrentAdmin } from "@/lib/auth";
 import { signedPutUrl, keys } from "@/lib/storage";
 import { createId } from "@/lib/id";
 
 // Upload direct d'un justificatif (image ou PDF) vers R2.
 export async function POST(req: NextRequest) {
-  const session = await getSession();
-  if (!session) return new NextResponse("Unauthorized", { status: 401 });
+  // Piece comptable : super admin uniquement.
+  const admin = await getCurrentAdmin();
+  if (!admin) return new NextResponse("Unauthorized", { status: 401 });
+  if (admin.role !== "SUPER_ADMIN") return new NextResponse("Forbidden", { status: 403 });
 
   const { contentType, ext } = await req.json();
   const id = createId();

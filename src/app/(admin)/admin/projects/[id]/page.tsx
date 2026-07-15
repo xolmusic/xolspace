@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import { isSuperAdmin } from "@/lib/auth";
 import Cover from "@/components/Cover";
 import {
   projectTypeLabel,
@@ -36,7 +37,8 @@ export default async function ProjectDetailPage({
   });
   if (!project) notFound();
 
-  // --- Finances du projet ---
+  // --- Finances du projet (super admin uniquement) ---
+  const canSeeFinances = await isSuperAdmin();
   const financeCategories = await prisma.txCategory.findMany({
     orderBy: [{ type: "asc" }, { position: "asc" }],
   });
@@ -219,6 +221,7 @@ export default async function ProjectDetailPage({
         </form>
       </section>
 
+      {canSeeFinances && (
       <section>
         <div className="row" style={{ justifyContent: "space-between", marginBottom: 14, flexWrap: "wrap", gap: 8 }}>
           <h2 style={{ fontSize: 18 }}>Finances du projet</h2>
@@ -245,6 +248,7 @@ export default async function ProjectDetailPage({
           </p>
         )}
       </section>
+      )}
     </div>
   );
 }

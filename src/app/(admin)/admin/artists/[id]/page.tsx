@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import { isSuperAdmin } from "@/lib/auth";
 import Cover from "@/components/Cover";
 import { projectTypeLabel, fmtDuration, fmtDate, relationTypeLabel, relationTypeBadge } from "@/lib/display";
 import { fmtMoney } from "@/lib/money";
@@ -55,7 +56,8 @@ export default async function ArtistDetailPage({
 
   const looseTracks = artist.tracks.filter((t: (typeof artist.tracks)[number]) => !t.projectId);
 
-  // --- Finances de l'artiste ---
+  // --- Finances de l'artiste (super admin uniquement) ---
+  const canSeeFinances = await isSuperAdmin();
   const financeCategories = await prisma.txCategory.findMany({
     orderBy: [{ type: "asc" }, { position: "asc" }],
   });
@@ -280,6 +282,7 @@ export default async function ArtistDetailPage({
         )}
       </section>
 
+      {canSeeFinances && (
       <section>
         <div className="row" style={{ justifyContent: "space-between", marginBottom: 4, flexWrap: "wrap", gap: 8 }}>
           <h2 style={{ fontSize: 18 }}>Finances</h2>
@@ -322,6 +325,7 @@ export default async function ArtistDetailPage({
           </p>
         )}
       </section>
+      )}
     </div>
   );
 }

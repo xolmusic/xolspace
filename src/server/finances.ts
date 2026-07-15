@@ -3,15 +3,18 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { getSession } from "@/lib/auth";
+import { getCurrentAdmin } from "@/lib/auth";
 import { deleteObject, keys } from "@/lib/storage";
 import { parseMoney } from "@/lib/money";
 
 type ActionResult = { ok?: boolean; error?: string };
 
+// Les finances sont reservees au super admin : chaque action le reverifie
+// en base, car une action serveur peut etre appelee sans passer par la page.
 async function requireAdmin() {
-  const s = await getSession();
-  if (!s) redirect("/login");
+  const admin = await getCurrentAdmin();
+  if (!admin) redirect("/login");
+  if (admin.role !== "SUPER_ADMIN") redirect("/admin");
 }
 
 function parseDate(v: FormDataEntryValue | null): Date | null {

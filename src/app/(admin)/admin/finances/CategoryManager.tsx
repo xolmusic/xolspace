@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createCategory, deleteCategory } from "@/server/finances";
 
@@ -20,7 +20,11 @@ export default function CategoryManager({
   const [state, action, pending] = useActionState(createCategory, null);
   const router = useRouter();
 
-  if (state?.ok) router.refresh();
+  // Rafraichit seulement quand une action vient d'aboutir (et non a
+  // chaque rendu, ce qui provoquait des rafraichissements en boucle).
+  useEffect(() => {
+    if (state?.ok) router.refresh();
+  }, [state, router]);
 
   const list = categories.filter((c) => c.type === tab);
 
