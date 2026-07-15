@@ -56,3 +56,20 @@ export function hash(plain: string) {
 export function compare(plain: string, hashed: string) {
   return bcrypt.compare(plain, hashed);
 }
+
+// --- Roles ---
+// Le role est toujours relu en base (et non depuis le jeton de session) :
+// un changement de droits est ainsi effectif immediatement.
+export async function getCurrentAdmin() {
+  const session = await getSession();
+  if (!session) return null;
+  return prisma.admin.findUnique({
+    where: { id: session.adminId },
+    select: { id: true, email: true, name: true, role: true },
+  });
+}
+
+export async function isSuperAdmin(): Promise<boolean> {
+  const admin = await getCurrentAdmin();
+  return admin?.role === "SUPER_ADMIN";
+}

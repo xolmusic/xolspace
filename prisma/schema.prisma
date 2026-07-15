@@ -16,7 +16,13 @@ model Admin {
   email        String   @unique
   passwordHash String
   name         String?
+  role         Role     @default(SUPER_ADMIN)
   createdAt    DateTime @default(now())
+}
+
+enum Role {
+  SUPER_ADMIN   // acces total, y compris la gestion des utilisateurs
+  USER          // acces a tout sauf la gestion des utilisateurs
 }
 
 model Artist {

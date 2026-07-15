@@ -17,13 +17,20 @@ const NAV = [
   { href: "/admin/links", label: "Liens de partage", icon: "M10 13a5 5 0 007 0l2-2a5 5 0 00-7-7l-1 1M14 11a5 5 0 00-7 0l-2 2a5 5 0 007 7l1-1" },
 ];
 
-export default function Sidebar() {
+// Reserve aux super admins.
+const SUPER_NAV = [
+  { href: "/admin/users", label: "Utilisateurs", icon: "M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8zM22 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" },
+];
+
+export default function Sidebar({ isSuperAdmin = false }: { isSuperAdmin?: boolean }) {
   const path = usePathname();
   const [open, setOpen] = useState(false);
 
+  const items = isSuperAdmin ? [...NAV, ...SUPER_NAV] : NAV;
+
   const nav = (
     <nav className="xol-nav">
-      {NAV.map((item) => {
+      {items.map((item) => {
         const active =
           item.href === "/admin" ? path === "/admin" : path.startsWith(item.href);
         return (
