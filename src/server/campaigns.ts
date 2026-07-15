@@ -59,6 +59,7 @@ export async function updateCampaign(_prev: unknown, formData: FormData): Promis
       emailBody: clean("emailBody"),
       signature: clean("signature"),
       fromName: clean("fromName"),
+      replyTo: clean("replyTo"),
       autoFollowUp: String(formData.get("autoFollowUp") ?? "") === "on",
       followUp1Days: formData.get("followUp1Days") ? Number(formData.get("followUp1Days")) : 5,
       followUp2Days: formData.get("followUp2Days") ? Number(formData.get("followUp2Days")) : 15,
@@ -204,7 +205,14 @@ export async function sendCampaign(formData: FormData): Promise<{ sent: number; 
       unsubscribeUrl,
     });
 
-    const res = await sendEmail({ to: email, from, subject, html });
+    const res = await sendEmail({
+      to: email,
+      from,
+      subject,
+      html,
+      // Les reponses arrivent dans une vraie boite que tu releves.
+      replyTo: campaign.replyTo ?? undefined,
+    });
 
     if (res.ok) {
       const now = new Date();

@@ -16,6 +16,7 @@ type Campaign = {
   emailBody: string | null;
   signature: string | null;
   fromName: string | null;
+  replyTo: string | null;
   autoFollowUp: boolean;
   followUp1Days: number;
   followUp2Days: number;
@@ -119,6 +120,21 @@ export default function CampaignEditor({
       <div className="field">
         <label htmlFor="fromName">Nom d&apos;expéditeur</label>
         <input id="fromName" name="fromName" className="input" defaultValue={campaign.fromName ?? ""} placeholder="XOL Music" />
+      </div>
+      <div className="field">
+        <label htmlFor="replyTo">Adresse de réponse</label>
+        <input
+          id="replyTo"
+          name="replyTo"
+          type="email"
+          className="input"
+          defaultValue={campaign.replyTo ?? ""}
+          placeholder="ton adresse email réelle"
+        />
+        <p className="muted" style={{ fontSize: 12, marginTop: 4 }}>
+          C&apos;est là qu&apos;arriveront les réponses des médias. Mets une boîte que tu
+          relèves vraiment — sinon les réponses se perdent.
+        </p>
       </div>
 
       <h3 style={{ fontSize: 15, margin: "10px 0 4px" }}>Relances automatiques</h3>

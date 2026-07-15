@@ -81,6 +81,7 @@ type RecipientWithRels = {
     emailSubject: string | null;
     shareToken: string | null;
     fromName: string | null;
+    replyTo: string | null;
     pitch: string | null;
     signature: string | null;
     artist: { stageName: string };
@@ -107,6 +108,12 @@ async function sendFollowUp(rec: RecipientWithRels, bodyTpl: string, base: strin
   const bodyText = mergeTemplate(bodyTpl, data);
   const html = buildHtml({ bodyText, listenUrl: listenBase, trackUrl: clickUrl, unsubscribeUrl });
 
-  const res = await sendEmail({ to: email, from: fromAddress(rec.campaign.fromName), subject, html });
+  const res = await sendEmail({
+    to: email,
+    from: fromAddress(rec.campaign.fromName),
+    subject,
+    html,
+    replyTo: rec.campaign.replyTo ?? undefined,
+  });
   return res.ok;
 }

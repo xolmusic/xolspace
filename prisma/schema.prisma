@@ -309,6 +309,7 @@ model Campaign {
   emailBody      String?               // modele avec variables {{prenom}} etc.
   signature      String?
   fromName       String?               // nom d'expediteur affiche
+  replyTo        String?               // adresse ou arrivent les reponses
   followUp1Days  Int       @default(5)  // 1re relance : J+5
   followUp2Days  Int       @default(15) // 2e relance : J+15
   followUp1Body  String?               // message de la 1re relance

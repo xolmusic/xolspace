@@ -99,7 +99,8 @@ export default async function CampaignDetailPage({
             pitch: campaign.pitch, shareToken: campaign.shareToken,
             emailSubject: campaign.emailSubject, emailBody: campaign.emailBody,
             signature: campaign.signature, projectId: campaign.projectId,
-            fromName: campaign.fromName, autoFollowUp: campaign.autoFollowUp,
+            fromName: campaign.fromName, replyTo: campaign.replyTo,
+            autoFollowUp: campaign.autoFollowUp,
             followUp1Days: campaign.followUp1Days, followUp2Days: campaign.followUp2Days,
             followUp1Body: campaign.followUp1Body, followUp2Body: campaign.followUp2Body,
           }}
