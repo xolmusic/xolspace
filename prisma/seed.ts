@@ -4,9 +4,14 @@ import bcrypt from "bcryptjs";
 const prisma = new PrismaClient();
 
 async function main() {
-  const email = process.env.ADMIN_EMAIL ?? "gwen@xolmusic.com";
-  const password = process.env.ADMIN_PASSWORD ?? "change-moi";
+  // Attention : on utilise || et non ?? — une variable definie mais VIDE
+  // doit aussi basculer sur la valeur de secours, sinon on cree un compte
+  // avec un email vide (inutilisable).
+  const email = (process.env.ADMIN_EMAIL || "gwen@xolmusic.com").trim().toLowerCase();
+  const password = process.env.ADMIN_PASSWORD || "change-moi";
   const passwordHash = await bcrypt.hash(password, 10);
+
+  if (!email) throw new Error("ADMIN_EMAIL invalide.");
 
   await prisma.admin.upsert({
     where: { email },
